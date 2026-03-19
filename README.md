@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/19 14:15:24.246111 )
+[//]: # (+ Revised: 	2026/03/19 14:31:51.067383 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -12,8 +12,8 @@ Cross-platform (desktop/mobile/web) fitness logger built with [Flet](https://fle
 
 | Repo | Role |
 |------|------|
-| `ximrato-app` | This repo — Flet frontend |
-| `ximrato-server` | FastAPI backend |
+| [`ximrato-app`](https://github.com/Ran-n/ximrato-app) | This repo — Flet frontend |
+| [`ximrato-server`](https://github.com/Ran-n/ximrato-server) | FastAPI backend |
 
 ## v1 Scope
 
