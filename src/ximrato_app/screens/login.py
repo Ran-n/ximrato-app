@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.273035
-Revised: 2026/03/20 09:16:11.497752
+Revised: 2026/03/20 09:53:36.289794
 """
 
 import flet as ft
@@ -44,6 +44,7 @@ def login_view(page: ft.Page) -> ft.View:
 
     username.on_submit = on_login
     password.on_submit = on_login
+    page.on_keyboard_event = None
 
     return ft.View(
         route="/login",

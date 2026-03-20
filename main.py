@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.074618
-Revised: 2026/03/20 09:41:23.789871
+Revised: 2026/03/20 09:49:19.058972
 """
 
 import logging
@@ -11,6 +11,7 @@ import flet as ft
 
 from ximrato_app.screens.home import home_view
 from ximrato_app.screens.login import login_view
+from ximrato_app.screens.profile import profile_view
 from ximrato_app.screens.register import register_view
 
 logging.basicConfig(
@@ -49,6 +50,8 @@ def main(page: ft.Page):
             page.views.append(register_view(page))
         elif route == "/home":
             page.views.append(home_view(page))
+        elif route == "/profile":
+            page.views.append(profile_view(page))
         else:
             page.views.append(login_view(page))
 
