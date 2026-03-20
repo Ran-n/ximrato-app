@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/20 11:52:21.826412 )
+[//]: # (+ Revised: 	2026/03/20 12:19:54.947963 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -55,9 +55,9 @@ uv run pytest tests/ -v
 - Keyboard controls — Enter submits forms on all screens, Escape navigates back where applicable, Tab moves between fields
 - Structured logging — route changes, API requests and responses
 - GUI smoke tests — 10 Playwright tests covering auth, profile, account, settings, and unauthenticated redirect
+- Home screen — launchpad with Session, Cardio, Body metrics buttons
 
 ### To Do
-- Home screen — meaningful content (dashboard or quick-action buttons)
 - Session logging — start session, log sets (exercise, reps, weight, RPE, to_failure), end session
 - Cardio quick log — duration, distance, type (running/cycling/rowing), optional fields
 - Body metrics log — weight, waist, chest, hips, neck, arms, thighs

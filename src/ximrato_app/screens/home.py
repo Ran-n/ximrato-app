@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.406117
-Revised: 2026/03/20 11:50:55.835662
+Revised: 2026/03/20 12:19:12.703996
 """
 
 import flet as ft
@@ -12,6 +12,12 @@ def home_view(page: ft.Page) -> ft.View:
     def on_logout(e):
         page.session.store.clear()
         page.run_task(page.push_route, "/login")
+
+    actions = [
+        (ft.Icons.FITNESS_CENTER, "Session", "/session"),
+        (ft.Icons.DIRECTIONS_RUN, "Cardio", "/cardio"),
+        (ft.Icons.MONITOR_WEIGHT, "Body metrics", "/metrics"),
+    ]
 
     return ft.View(
         route="/home",
@@ -30,12 +36,22 @@ def home_view(page: ft.Page) -> ft.View:
             ft.Container(
                 content=ft.Column(
                     [
-                        ft.Text("Welcome!", size=24, weight=ft.FontWeight.BOLD),
-                        ft.Text("More features coming soon."),
+                        ft.Button(
+                            text,
+                            icon=icon,
+                            on_click=lambda _, r=route: page.run_task(
+                                page.push_route, r
+                            ),
+                            width=float("inf"),
+                        )
+                        for icon, text, route in actions
                     ],
-                    spacing=12,
+                    spacing=16,
+                    width=320,
                 ),
                 padding=32,
+                alignment=ft.Alignment(0, -0.4),
+                expand=True,
             )
         ],
     )

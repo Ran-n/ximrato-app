@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.074618
-Revised: 2026/03/20 11:50:55.584476
+Revised: 2026/03/20 12:19:12.638367
 """
 
 import logging
@@ -10,10 +10,13 @@ import logging
 import flet as ft
 
 from ximrato_app.screens.account import account_view
+from ximrato_app.screens.cardio import cardio_view
 from ximrato_app.screens.home import home_view
 from ximrato_app.screens.login import login_view
+from ximrato_app.screens.metrics import metrics_view
 from ximrato_app.screens.profile import profile_view
 from ximrato_app.screens.register import register_view
+from ximrato_app.screens.session import session_view
 from ximrato_app.screens.settings import settings_view
 
 logging.basicConfig(
@@ -58,6 +61,12 @@ def main(page: ft.Page):
             page.views.append(account_view(page))
         elif route == "/settings":
             page.views.append(settings_view(page))
+        elif route == "/session":
+            page.views.append(session_view(page))
+        elif route == "/cardio":
+            page.views.append(cardio_view(page))
+        elif route == "/metrics":
+            page.views.append(metrics_view(page))
         else:
             page.views.append(login_view(page))
 
