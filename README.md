@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/20 12:19:54.947963 )
+[//]: # (+ Revised: 	2026/03/20 18:35:17.032508 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -14,6 +14,18 @@ Cross-platform (desktop/mobile/web) fitness logger built with [Flet](https://fle
 |------|------|
 | [`ximrato-app`](https://github.com/Ran-n/ximrato-app) | This repo — Flet frontend |
 | [`ximrato-server`](https://github.com/Ran-n/ximrato-server) | FastAPI backend |
+
+## Configuration
+
+Copy `.env.example` to `.env` and set the values:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `XIMRATO_API_URL` | `http://127.0.0.1:8000` | Backend base URL |
 
 ## Running
 
@@ -54,15 +66,17 @@ uv run pytest tests/ -v
 - Unit config screen (`/settings`) — weight (kg/lb), distance (km/mi), height (cm/in); reachable from profile AppBar
 - Keyboard controls — Enter submits forms on all screens, Escape navigates back where applicable, Tab moves between fields
 - Structured logging — route changes, API requests and responses
-- GUI smoke tests — 10 Playwright tests covering auth, profile, account, settings, and unauthenticated redirect
+- GUI smoke tests — 12 Playwright tests covering auth, profile, account, settings, session, and unauthenticated redirect
+- Unit tests — sessions API client and session screen helpers (formatting, label generation)
 - Home screen — launchpad with Session, Cardio, Body metrics buttons
+- Session logging — start session, log sets (exercise dropdown, reps, weight, bodyweight/to_failure flags, RPE), end session, view past sessions
 
 ### To Do
-- Session logging — start session, log sets (exercise, reps, weight, RPE, to_failure), end session
 - Cardio quick log — duration, distance, type (running/cycling/rowing), optional fields
 - Body metrics log — weight, waist, chest, hips, neck, arms, thighs
 - History views — past sessions, cardio logs, body metric trends
 - Token refresh on 401 — auto-retry with refresh token, redirect to login on expiry
+- i18n — multiple language support
 
 ## v1 Scope
 

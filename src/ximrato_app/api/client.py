@@ -2,12 +2,17 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.139857
-Revised: 2026/03/20 09:11:40.711084
+Revised: 2026/03/20 18:32:49.339857
 """
 
-import httpx
+import os
 
-BASE_URL = "http://127.0.0.1:8000"
+import httpx
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BASE_URL = os.getenv("XIMRATO_API_URL", "http://127.0.0.1:8000")
 
 
 def get_client(token: str | None = None) -> httpx.Client:

@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.406117
-Revised: 2026/03/20 12:19:12.703996
+Revised: 2026/03/20 17:18:17.507740
 """
 
 import flet as ft
@@ -18,6 +18,8 @@ def home_view(page: ft.Page) -> ft.View:
         (ft.Icons.DIRECTIONS_RUN, "Cardio", "/cardio"),
         (ft.Icons.MONITOR_WEIGHT, "Body metrics", "/metrics"),
     ]
+
+    page.on_keyboard_event = None
 
     return ft.View(
         route="/home",

@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:41:15.000000
-Revised: 2026/03/20 11:23:43.063885
+Revised: 2026/03/20 17:06:44.348237
 """
 
 # GUI smoke tests — requires both services running (see conftest.py).
@@ -22,6 +22,10 @@ Revised: 2026/03/20 11:23:43.063885
 #   Profile: btn[0]=back, btn[1]=Account settings, btn[2]=Unit settings
 #   Account: btn[0]=back
 #   Settings: btn[0]=back, btn[1]=weight dropdown, btn[2]=distance, btn[3]=height
+#   Session: btn[0]=back
+#     end session → locator("flt-semantics[aria-label='End session']")
+#     Flutter tooltip wraps the button in a Semantics node with aria-label but no
+#     role; get_by_role("button", name=...) cannot find it — use CSS locator.
 
 import pytest
 
@@ -211,6 +215,36 @@ def test_settings_change_weight_unit(page, app_url, gui_credentials):
     page.wait_for_timeout(2000)
 
     assert _has_text(page, "Settings saved.")
+
+
+def test_navigate_to_session(page, app_url, gui_credentials):
+    _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
+    _click(page, "Session")
+    _wait_url(page, "/session")
+
+
+def test_session_start_and_end(page, app_url, gui_credentials):
+    _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
+    _click(page, "Session")
+    _wait_url(page, "/session")
+    page.wait_for_timeout(1500)
+
+    _end_session = page.locator(
+        "flt-semantics[aria-label='End session'] flt-semantics[role='button']"
+    )
+
+    # If a previous run left an active session, end it first so we start clean.
+    if not _has_text(page, "Start session"):
+        _end_session.click()
+        page.wait_for_timeout(3000)
+
+    _click(page, "Start session")
+    page.wait_for_timeout(2000)
+
+    _end_session.click()
+    page.wait_for_timeout(3000)
+
+    assert _has_text(page, "Start session")
 
 
 def test_unauthenticated_redirect(page, app_url):
