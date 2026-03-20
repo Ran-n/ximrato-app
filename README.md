@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/20 09:55:10.773216 )
+[//]: # (+ Revised: 	2026/03/20 11:52:21.826412 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -17,26 +17,46 @@ Cross-platform (desktop/mobile/web) fitness logger built with [Flet](https://fle
 
 ## Running
 
+Desktop:
 ```bash
 uv run python main.py
 ```
 
-Auto-restart on file changes (dev):
+Web:
 ```bash
-uv run watchmedo auto-restart --patterns="*.py" --recursive -- python main.py
+uv run flet run --web --port 8080 main.py
+```
+
+## Testing
+
+Unit tests (no services needed):
+```bash
+uv run pytest tests/ -m "not gui"
+```
+
+GUI smoke tests (requires both services running):
+```bash
+# terminal 1 — backend
+cd ../ximrato-server && uv run uvicorn main:app --reload
+
+# terminal 2 — frontend
+uv run flet run --web --port 8080 main.py
+
+# terminal 3 — tests
+uv run pytest tests/ -v
 ```
 
 ## v1 Progress
 
 ### Done
 - Auth — login and register screens, JWT tokens stored in session, auth guard on all routes
-- Profile screen — view and edit username, email, password; only sends changed fields
+- Profile screen — view and edit username, email, password, display name, sex, date of birth, height; only sends changed fields
+- Unit config screen (`/settings`) — weight (kg/lb), distance (km/mi), height (cm/in); reachable from profile AppBar
 - Keyboard controls — Enter submits forms on all screens, Escape navigates back where applicable, Tab moves between fields
 - Structured logging — route changes, API requests and responses
+- GUI smoke tests — 10 Playwright tests covering auth, profile, account, settings, and unauthenticated redirect
 
 ### To Do
-- Extended profile fields — display name, sex, date of birth, height
-- Unit config screen — weight (kg/lb), distance (km/mi), height (cm/in)
 - Home screen — meaningful content (dashboard or quick-action buttons)
 - Session logging — start session, log sets (exercise, reps, weight, RPE, to_failure), end session
 - Cardio quick log — duration, distance, type (running/cycling/rowing), optional fields

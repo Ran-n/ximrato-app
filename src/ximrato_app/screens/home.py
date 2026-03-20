@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.406117
-Revised: 2026/03/20 09:49:19.434560
+Revised: 2026/03/20 11:50:55.835662
 """
 
 import flet as ft
@@ -11,7 +11,7 @@ import flet as ft
 def home_view(page: ft.Page) -> ft.View:
     def on_logout(e):
         page.session.store.clear()
-        page.go("/login")
+        page.run_task(page.push_route, "/login")
 
     return ft.View(
         route="/home",
@@ -21,7 +21,7 @@ def home_view(page: ft.Page) -> ft.View:
                 ft.IconButton(
                     ft.Icons.PERSON,
                     tooltip="Profile",
-                    on_click=lambda _: page.go("/profile"),
+                    on_click=lambda _: page.run_task(page.push_route, "/profile"),
                 ),
                 ft.IconButton(ft.Icons.LOGOUT, tooltip="Log out", on_click=on_logout),
             ],

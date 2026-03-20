@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.273035
-Revised: 2026/03/20 09:53:36.289794
+Revised: 2026/03/20 11:51:17.458275
 """
 
 import flet as ft
@@ -29,7 +29,7 @@ def login_view(page: ft.Page) -> ft.View:
             if exc.response.status_code == 401:
                 error.value = "Wrong username or password."
             else:
-                error.value = f"Server error ({exc.response.status_code})."
+                error.value = "Something went wrong. Please try again."
             error.visible = True
             page.update()
             return
@@ -40,7 +40,7 @@ def login_view(page: ft.Page) -> ft.View:
             return
         page.session.store.set("access_token", data["access_token"])
         page.session.store.set("refresh_token", data["refresh_token"])
-        page.go("/home")
+        page.run_task(page.push_route, "/home")
 
     username.on_submit = on_login
     password.on_submit = on_login
@@ -58,12 +58,12 @@ def login_view(page: ft.Page) -> ft.View:
                         username,
                         password,
                         error,
-                        ft.ElevatedButton(
-                            "Log in", on_click=on_login, width=float("inf")
-                        ),
+                        ft.Button("Log in", on_click=on_login, width=float("inf")),
                         ft.TextButton(
                             "Don't have an account? Register",
-                            on_click=lambda _: page.go("/register"),
+                            on_click=lambda _: page.run_task(
+                                page.push_route, "/register"
+                            ),
                         ),
                     ],
                     spacing=12,

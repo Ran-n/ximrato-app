@@ -2,13 +2,14 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.338934
-Revised: 2026/03/20 09:34:34.130955
+Revised: 2026/03/20 11:51:17.537235
 """
 
 import flet as ft
 import httpx
 
 from ximrato_app.api import auth as auth_api
+from ximrato_app.api.errors import parse_422
 
 
 def register_view(page: ft.Page) -> ft.View:
@@ -51,17 +52,9 @@ def register_view(page: ft.Page) -> ft.View:
                     else "Email already registered."
                 )
             elif status == 422:
-                detail = exc.response.json().get("detail", [])
-                if isinstance(detail, list) and detail:
-                    loc = " → ".join(
-                        str(p) for p in detail[0].get("loc", []) if p != "body"
-                    )
-                    msg = detail[0].get("msg", "invalid input")
-                    error.value = f"{loc}: {msg}" if loc else msg
-                else:
-                    error.value = "Invalid input."
+                error.value = parse_422(exc.response)
             else:
-                error.value = f"Server error ({status})."
+                error.value = "Something went wrong. Please try again."
             error.visible = True
             page.update()
             return
@@ -72,7 +65,7 @@ def register_view(page: ft.Page) -> ft.View:
             return
         page.session.store.set("access_token", data["access_token"])
         page.session.store.set("refresh_token", data["refresh_token"])
-        page.go("/home")
+        page.run_task(page.push_route, "/home")
 
     username.on_submit = on_register
     email.on_submit = on_register
@@ -81,7 +74,7 @@ def register_view(page: ft.Page) -> ft.View:
 
     def on_keyboard(e: ft.KeyboardEvent):
         if e.key == "Escape":
-            page.go("/login")
+            page.run_task(page.push_route, "/login")
 
     page.on_keyboard_event = on_keyboard
 
@@ -99,12 +92,10 @@ def register_view(page: ft.Page) -> ft.View:
                         password,
                         password2,
                         error,
-                        ft.ElevatedButton(
-                            "Register", on_click=on_register, width=float("inf")
-                        ),
+                        ft.Button("Register", on_click=on_register, width=float("inf")),
                         ft.TextButton(
                             "Already have an account? Log in",
-                            on_click=lambda _: page.go("/login"),
+                            on_click=lambda _: page.run_task(page.push_route, "/login"),
                         ),
                     ],
                     spacing=12,

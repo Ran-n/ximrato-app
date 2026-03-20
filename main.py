@@ -2,17 +2,19 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.074618
-Revised: 2026/03/20 09:49:19.058972
+Revised: 2026/03/20 11:50:55.584476
 """
 
 import logging
 
 import flet as ft
 
+from ximrato_app.screens.account import account_view
 from ximrato_app.screens.home import home_view
 from ximrato_app.screens.login import login_view
 from ximrato_app.screens.profile import profile_view
 from ximrato_app.screens.register import register_view
+from ximrato_app.screens.settings import settings_view
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,12 +39,12 @@ def main(page: ft.Page):
 
         if route not in _PUBLIC and not token:
             log.info("unauthenticated access to %r → redirecting to /login", route)
-            page.go("/login")
+            page.run_task(page.push_route, "/login")
             return
 
         if route in _PUBLIC and token:
             log.info("authenticated user on %r → redirecting to /home", route)
-            page.go("/home")
+            page.run_task(page.push_route, "/home")
             return
 
         page.views.clear()
@@ -52,6 +54,10 @@ def main(page: ft.Page):
             page.views.append(home_view(page))
         elif route == "/profile":
             page.views.append(profile_view(page))
+        elif route == "/account":
+            page.views.append(account_view(page))
+        elif route == "/settings":
+            page.views.append(settings_view(page))
         else:
             page.views.append(login_view(page))
 
@@ -60,11 +66,11 @@ def main(page: ft.Page):
     def view_pop(e):
         if len(page.views) > 1:
             page.views.pop()
-            page.go(page.views[-1].route)
+            page.run_task(page.push_route, page.views[-1].route)
 
     page.on_route_change = route_change
     page.on_view_pop = view_pop
-    page.go("/login")
+    page.run_task(page.push_route, "/login")
 
 
 ft.run(main)
