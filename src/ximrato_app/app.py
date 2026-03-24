@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/24 08:51:53.915049
-Revised: 2026/03/24 13:36:03.464040
+Revised: 2026/03/24 17:52:10.037369
 """
 
 import logging
@@ -79,4 +79,4 @@ def main(page: ft.Page):
 
     page.on_route_change = route_change
     page.on_view_pop = view_pop
-    page.run_task(page.push_route, "/login")
+    page.run_task(route_change, None)
