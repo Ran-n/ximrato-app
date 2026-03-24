@@ -2,10 +2,13 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.000000
-Revised: 2026/03/20 12:10:04.098709
+Revised: 2026/03/24 07:36:02.620338
 """
 
+import base64
 import logging
+import mimetypes
+import time
 from datetime import date, datetime
 
 import flet as ft
@@ -45,6 +48,79 @@ def profile_view(page: ft.Page) -> ft.View:
     original: dict = {}
     selected_dob: date | None = None
     _date_picker: ft.DatePicker | None = None
+    _avatar_url: list[str | None] = [None]
+    # non-empty str = path to upload, "" = remove, None = no change
+    _pending_avatar: list[str | None] = [None]
+
+    _file_picker = ft.FilePicker()
+
+    avatar_img = ft.Image(
+        src="",
+        width=96,
+        height=96,
+        fit="cover",
+        visible=False,
+    )
+    avatar_icon = ft.Icon(
+        ft.Icons.PERSON,
+        size=48,
+        color=ft.Colors.ON_SURFACE_VARIANT,
+    )
+    avatar_circle = ft.Container(
+        width=96,
+        height=96,
+        border_radius=48,
+        bgcolor=ft.Colors.SURFACE_CONTAINER_HIGH,
+        clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
+        alignment=ft.Alignment(0, 0),
+        content=ft.Stack([avatar_img, avatar_icon]),
+    )
+    remove_btn = ft.TextButton("Remove", visible=False)
+
+    def _refresh_avatar():
+        url = _avatar_url[0]
+        if url:
+            avatar_img.src = f"{url}?v={int(time.time())}"
+            avatar_img.visible = True
+            avatar_icon.visible = False
+            remove_btn.visible = True
+        else:
+            avatar_img.visible = False
+            avatar_icon.visible = True
+            remove_btn.visible = False
+        page.update()
+
+    async def _pick_avatar(e):
+        files = await _file_picker.pick_files(
+            allowed_extensions=["jpg", "jpeg", "png", "webp"],
+            allow_multiple=False,
+        )
+        if not files:
+            return
+        f = files[0]
+        mime = mimetypes.guess_type(f.name)[0] or "application/octet-stream"
+        if f.path is not None:
+            with open(f.path, "rb") as fh:
+                data = fh.read()
+            preview_src = f.path
+        else:
+            data = bytes(f.bytes)
+            preview_src = f"data:{mime};base64,{base64.b64encode(data).decode()}"
+        _pending_avatar[0] = (data, f.name, mime)
+        avatar_img.src = preview_src
+        avatar_img.visible = True
+        avatar_icon.visible = False
+        remove_btn.visible = True
+        on_field_change(None)
+
+    def on_remove_avatar(e):
+        _pending_avatar[0] = ""
+        avatar_img.visible = False
+        avatar_icon.visible = True
+        remove_btn.visible = False
+        on_field_change(None)
+
+    remove_btn.on_click = on_remove_avatar
 
     def pick_date():
         nonlocal _date_picker
@@ -74,7 +150,7 @@ def profile_view(page: ft.Page) -> ft.View:
         nonlocal selected_dob
         try:
             data = users_api.get_me(token)
-            config = users_api.get_config(token)
+            cfg = users_api.get_config(token)
             original["display_name"] = data.get("display_name") or ""
             original["sex"] = data.get("sex") or ""
             original["date_of_birth"] = data.get("date_of_birth") or ""
@@ -85,7 +161,7 @@ def profile_view(page: ft.Page) -> ft.View:
             display_name.value = original["display_name"]
             sex.value = original["sex"] or ""
             height.value = original["height"]
-            height.suffix = ft.Text(config["height_unit"])
+            height.suffix = ft.Text(cfg["height_unit"])
 
             dob_raw = original["date_of_birth"]
             if dob_raw:
@@ -97,7 +173,13 @@ def profile_view(page: ft.Page) -> ft.View:
                 dob_text.value = ""
                 dob_button.text = "Set date of birth"
 
+            _avatar_url[0] = data.get("avatar_url")
+            _refresh_avatar()
+
             log.info("profile loaded for user_id=%s", data["id"])
+        except httpx.HTTPStatusError:
+            error.value = "Could not load profile data."
+            error.visible = True
             page.update()
         except httpx.RequestError:
             error.value = "Could not reach the server."
@@ -132,28 +214,46 @@ def profile_view(page: ft.Page) -> ft.View:
             else:
                 fields["height"] = None
 
-        if not fields:
+        pending = _pending_avatar[0]
+        if not fields and pending is None:
             return
 
         try:
-            data = users_api.update_me(token, **fields)
-            original["display_name"] = data.get("display_name") or ""
-            original["sex"] = data.get("sex") or ""
-            original["date_of_birth"] = data.get("date_of_birth") or ""
-            original["height"] = (
-                str(data["height"]) if data.get("height") is not None else ""
-            )
-            display_name.value = original["display_name"]
-            sex.value = original["sex"] or ""
-            height.value = original["height"]
+            if pending is not None:
+                if pending:
+                    av_data, av_filename, av_mime = pending
+                    users_api.upload_avatar(token, av_data, av_filename, av_mime)
+                    data_av = users_api.get_me(token)
+                    _avatar_url[0] = data_av.get("avatar_url")
+                else:
+                    users_api.delete_avatar(token)
+                    _avatar_url[0] = None
+                _pending_avatar[0] = None
+                _refresh_avatar()
+                log.info("avatar %s", "uploaded" if pending else "removed")
+
+            if fields:
+                data = users_api.update_me(token, **fields)
+                original["display_name"] = data.get("display_name") or ""
+                original["sex"] = data.get("sex") or ""
+                original["date_of_birth"] = data.get("date_of_birth") or ""
+                original["height"] = (
+                    str(data["height"]) if data.get("height") is not None else ""
+                )
+                display_name.value = original["display_name"]
+                sex.value = original["sex"] or ""
+                height.value = original["height"]
+                log.info("profile updated for user_id=%s", data["id"])
+
             status.value = "Saved."
             status.color = ft.Colors.GREEN_400
             status.visible = True
-            log.info("profile updated for user_id=%s", data["id"])
         except httpx.HTTPStatusError as exc:
             code = exc.response.status_code
             error.value = (
-                parse_422(exc.response)
+                "File too large (max 5 MB)."
+                if pending and code == 413
+                else parse_422(exc.response)
                 if code == 422
                 else "Something went wrong. Please try again."
             )
@@ -205,6 +305,23 @@ def profile_view(page: ft.Page) -> ft.View:
             ft.Container(
                 content=ft.Column(
                     [
+                        ft.Column(
+                            [
+                                avatar_circle,
+                                ft.Row(
+                                    [
+                                        ft.TextButton(
+                                            "Change photo",
+                                            on_click=_pick_avatar,
+                                        ),
+                                        remove_btn,
+                                    ],
+                                    alignment=ft.MainAxisAlignment.CENTER,
+                                ),
+                            ],
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            spacing=4,
+                        ),
                         display_name,
                         sex,
                         ft.Column(
@@ -230,7 +347,7 @@ def profile_view(page: ft.Page) -> ft.View:
                     spacing=16,
                     width=320,
                 ),
-                padding=ft.padding.symmetric(horizontal=32, vertical=24),
+                padding=ft.Padding.symmetric(horizontal=32, vertical=24),
                 alignment=ft.Alignment(0, -0.5),
                 expand=True,
             )

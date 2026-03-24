@@ -28,6 +28,8 @@ select = ["E", "F", "I"]
 
 [dependency-groups]
 dev = [
+    "flet-cli>=0.27.0",
+    "flet-desktop>=0.27.0",
     "pytest>=9.0.2",
     "pytest-playwright>=0.7.2",
     "ruff>=0.15.7",

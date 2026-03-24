@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:04:44.000000
-Revised: 2026/03/20 11:51:17.780179
+Revised: 2026/03/21 20:44:31.508543
 """
 
 import logging
@@ -55,6 +55,10 @@ def settings_view(page: ft.Page) -> ft.View:
             distance_unit.value = data["distance_unit"]
             height_unit.value = data["height_unit"]
             log.info("config loaded")
+            page.update()
+        except httpx.HTTPStatusError:
+            error.value = "Could not load settings."
+            error.visible = True
             page.update()
         except httpx.RequestError:
             error.value = "Could not reach the server."

@@ -1,12 +1,12 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/20 18:35:17.032508 )
+[//]: # (+ Revised: 	2026/03/24 09:10:25.492882 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
 
-Cross-platform (desktop/mobile/web) fitness logger built with [Flet](https://flet.dev) (Python). Frontend counterpart to [ximrato-server](../ximrato-server).
+Cross-platform (desktop/mobile/web) fitness logger built with [Flet](https://flet.dev) (Python). Frontend counterpart to [ximrato-server](../ximrato-server/README.md).
 
 ## Repos
 
@@ -25,7 +25,7 @@ cp .env.example .env
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `XIMRATO_API_URL` | `http://127.0.0.1:8000` | Backend base URL |
+| `XIMRATO_API_URL` | `http://127.0.0.1:8000` | Backend base URL. Port must match the server's `PORT` env variable. |
 
 ## Running
 
@@ -63,11 +63,12 @@ uv run pytest tests/ -v
 ### Done
 - Auth — login and register screens, JWT tokens stored in session, auth guard on all routes
 - Profile screen — view and edit username, email, password, display name, sex, date of birth, height; only sends changed fields
+- Profile picture — upload (JPEG/PNG/WebP) and remove avatar from profile screen
 - Unit config screen (`/settings`) — weight (kg/lb), distance (km/mi), height (cm/in); reachable from profile AppBar
 - Keyboard controls — Enter submits forms on all screens, Escape navigates back where applicable, Tab moves between fields
 - Structured logging — route changes, API requests and responses
-- GUI smoke tests — 12 Playwright tests covering auth, profile, account, settings, session, and unauthenticated redirect
-- Unit tests — sessions API client and session screen helpers (formatting, label generation)
+- GUI smoke tests — 13 Playwright tests covering auth, profile, account, settings, session, unauthenticated redirect, and avatar button visibility
+- Unit tests — sessions API client, users API client (avatar upload/delete), and session screen helpers (formatting, label generation)
 - Home screen — launchpad with Session, Cardio, Body metrics buttons
 - Session logging — start session, log sets (exercise dropdown, reps, weight, bodyweight/to_failure flags, RPE), end session, view past sessions
 
@@ -86,6 +87,7 @@ uv run pytest tests/ -v
 
 ### User Profile & Config
 - Static profile: display name, sex, date of birth, height
+- Profile picture: upload (JPEG/PNG/WebP, max 5 MB), remove
 - Units config screen: weight (kg/lb), distance (km/mi), height (cm/in)
 
 ### Logging Flows

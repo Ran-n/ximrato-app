@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:04:44.000000
-Revised: 2026/03/20 11:51:17.702718
+Revised: 2026/03/21 20:44:31.330382
 """
 
 import logging
@@ -50,6 +50,10 @@ def account_view(page: ft.Page) -> ft.View:
             username.value = data["username"]
             email.value = data["email"]
             log.info("account loaded for user_id=%s", data["id"])
+            page.update()
+        except httpx.HTTPStatusError:
+            error.value = "Could not load account data."
+            error.visible = True
             page.update()
         except httpx.RequestError:
             error.value = "Could not reach the server."
