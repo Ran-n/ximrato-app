@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/24 08:51:53.915049
-Revised: 2026/03/24 08:51:53.915049
+Revised: 2026/03/24 13:36:03.464040
 """
 
 import logging
@@ -35,7 +35,7 @@ def main(page: ft.Page):
 
     store = page.session.store
 
-    def route_change(e):
+    async def route_change(e):
         route = page.route
         token = store.get("access_token")
         log.info("route change: %r authenticated=%s", route, bool(token))
@@ -54,9 +54,9 @@ def main(page: ft.Page):
         if route == "/register":
             page.views.append(register_view(page))
         elif route == "/home":
-            page.views.append(home_view(page))
+            page.views.append(await home_view(page))
         elif route == "/profile":
-            page.views.append(profile_view(page))
+            page.views.append(await profile_view(page))
         elif route == "/account":
             page.views.append(account_view(page))
         elif route == "/settings":

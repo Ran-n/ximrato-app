@@ -2,53 +2,73 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.406117
-Revised: 2026/03/23 13:16:38.522646
+Revised: 2026/03/24 17:25:27.786217
 """
 
-import time
+import asyncio
+import base64
+from urllib.parse import urlparse
 
 import flet as ft
 import httpx
 
 from ximrato_app.api import users as users_api
+from ximrato_app.api.client import get_client
+
+log = __import__("logging").getLogger("ximrato_app.screens.home")
 
 
-def home_view(page: ft.Page) -> ft.View:
+async def home_view(page: ft.Page) -> ft.View:
     token = page.session.store.get("access_token")
 
     def on_logout(e):
         page.session.store.clear()
         page.run_task(page.push_route, "/login")
 
-    avatar_url: str | None = None
-    try:
-        avatar_url = users_api.get_me(token).get("avatar_url")
-    except (httpx.HTTPStatusError, httpx.RequestError):
-        pass
+    # --- Pre-fetch avatar before building widget ---
 
-    if avatar_url:
-        profile_btn = ft.Container(
-            content=ft.Image(
-                src=f"{avatar_url}?v={int(time.time())}",
+    def _fetch_avatar() -> str:
+        me = users_api.get_me(token)
+        url = me.get("avatar_url")
+        if not url:
+            return ""
+        with get_client(token) as c:
+            r = c.get(urlparse(url).path)
+            r.raise_for_status()
+        return base64.b64encode(r.content).decode()
+
+    try:
+        initial_b64 = await asyncio.to_thread(_fetch_avatar)
+    except (httpx.HTTPStatusError, httpx.RequestError, Exception):
+        initial_b64 = ""
+
+    log.info("home_view: avatar b64 len=%d", len(initial_b64))
+
+    avatar_circle = ft.Stack(
+        controls=[
+            ft.CircleAvatar(
+                content=ft.Icon(ft.Icons.PERSON, size=20),
+                bgcolor=ft.Colors.SURFACE_CONTAINER_HIGH,
+                radius=16,
+            ),
+            ft.Image(
+                src=initial_b64 or "",
                 width=32,
                 height=32,
-                fit="cover",
+                border_radius=ft.BorderRadius.all(16),
+                fit=ft.BoxFit.COVER,
+                visible=bool(initial_b64),
             ),
-            width=32,
-            height=32,
-            border_radius=16,
-            clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
-            bgcolor=ft.Colors.TRANSPARENT,
-            on_click=lambda _: page.run_task(page.push_route, "/profile"),
-            tooltip="Profile",
-            margin=ft.Margin(0, 0, 4, 0),
-        )
-    else:
-        profile_btn = ft.IconButton(
-            ft.Icons.PERSON,
-            tooltip="Profile",
-            on_click=lambda _: page.run_task(page.push_route, "/profile"),
-        )
+        ],
+        width=32,
+        height=32,
+    )
+    profile_btn = ft.Container(
+        content=avatar_circle,
+        on_click=lambda _: page.run_task(page.push_route, "/profile"),
+        tooltip="Profile",
+        margin=ft.Margin(0, 0, 4, 0),
+    )
 
     actions = [
         (ft.Icons.FITNESS_CENTER, "Session", "/session"),

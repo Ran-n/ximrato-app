@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/24 09:10:25.492882 )
+[//]: # (+ Revised: 	2026/03/24 17:49:39.170983 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -116,6 +116,18 @@ Cardio types v1: running, cycling, rowing.
 
 ### Body Metrics (time-series)
 weight, waist, chest, hips, neck, arms, thighs
+
+## Known Issues
+
+### Avatar not displayed on Firefox-based browsers (web)
+
+Profile and home-screen avatars show the placeholder icon instead of the uploaded image when running the web build on Firefox or any Gecko-based browser. Desktop and Chromium-based browsers are unaffected.
+
+**Root cause:** Flet 0.82 compiles the Flutter frontend to WebAssembly (CanvasKit renderer). In this mode, every image source — including in-memory byte arrays and plain base64 strings — ultimately passes through Flutter web's `MemoryImage` codec, which has a known decoding defect on the Gecko/SpiderMonkey runtime. There is no encoding of the image data on the Python side that bypasses this; the issue is inside Flet's compiled Dart/Flutter layer.
+
+**Workaround:** none at the current Flet version. The placeholder icon is shown as a fallback. Monitor Flet release notes for a fix.
+
+---
 
 ## v2 (deferred)
 - HIIT / circuit training
