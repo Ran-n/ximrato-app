@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.338934
-Revised: 2026/03/20 11:51:17.537235
+Revised: 2026/03/25 09:16:34.723098
 """
 
 import flet as ft
@@ -84,7 +84,7 @@ def register_view(page: ft.Page) -> ft.View:
             ft.Container(
                 content=ft.Column(
                     [
-                        ft.Text("ximrato", size=32, weight=ft.FontWeight.BOLD),
+                        ft.Image(src="logo.svg", width=80, height=80),
                         ft.Text("Create an account", size=14),
                         ft.Divider(height=16, color=ft.Colors.TRANSPARENT),
                         username,

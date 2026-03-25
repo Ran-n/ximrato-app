@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.273035
-Revised: 2026/03/20 11:51:17.458275
+Revised: 2026/03/25 09:59:09.806065
 """
 
 import flet as ft
@@ -52,8 +52,19 @@ def login_view(page: ft.Page) -> ft.View:
             ft.Container(
                 content=ft.Column(
                     [
-                        ft.Text("ximrato", size=32, weight=ft.FontWeight.BOLD),
-                        ft.Text("Log in to your account", size=14),
+                        ft.Row(
+                            [
+                                ft.Image(src="logo.svg", width=64, height=64),
+                                ft.Text(
+                                    "ximrato",
+                                    size=28,
+                                    weight=ft.FontWeight.BOLD,
+                                ),
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                            spacing=12,
+                        ),
                         ft.Divider(height=16, color=ft.Colors.TRANSPARENT),
                         username,
                         password,

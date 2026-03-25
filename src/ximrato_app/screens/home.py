@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.406117
-Revised: 2026/03/24 17:25:27.786217
+Revised: 2026/03/25 10:01:50.940137
 """
 
 import asyncio
@@ -81,7 +81,14 @@ async def home_view(page: ft.Page) -> ft.View:
     return ft.View(
         route="/home",
         appbar=ft.AppBar(
-            title=ft.Text("ximrato"),
+            title=ft.Row(
+                [
+                    ft.Image(src="logo.svg", width=32, height=32),
+                    ft.Text("ximrato", size=18, weight=ft.FontWeight.BOLD),
+                ],
+                spacing=8,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
             actions=[
                 profile_btn,
                 ft.IconButton(ft.Icons.LOGOUT, tooltip="Log out", on_click=on_logout),

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="58 68 396 396">
+  <defs>
+    <clipPath id="bg-clip">
+      <rect width="512" height="512" rx="112"/>
+    </clipPath>
+
+    <radialGradient id="fur" cx="30%" cy="28%" r="72%">
+      <stop offset="0%"   stop-color="#545454"/>
+      <stop offset="100%" stop-color="#1A1A1A"/>
+    </radialGradient>
+
+    <radialGradient id="head-fur" cx="35%" cy="28%" r="70%">
+      <stop offset="0%"   stop-color="#5C5C5C"/>
+      <stop offset="100%" stop-color="#181818"/>
+    </radialGradient>
+
+    <radialGradient id="skin" cx="50%" cy="45%" r="60%">
+      <stop offset="0%"   stop-color="#E8A898"/>
+      <stop offset="100%" stop-color="#A85A50"/>
+    </radialGradient>
+
+    <clipPath id="teeth-clip">
+      <path d="M 228 410 Q 256 430 284 410 L 512 600 L 0 600 Z"/>
+    </clipPath>
+  </defs>
+
+  <g>
+    <!-- Outer ears -->
+    <circle cx="170" cy="155" r="72" fill="url(#fur)"/>
+    <circle cx="342" cy="155" r="72" fill="url(#fur)"/>
+    <!-- Inner ears (skin) -->
+    <circle cx="170" cy="150" r="40" fill="url(#skin)"/>
+    <circle cx="342" cy="150" r="40" fill="url(#skin)"/>
+    <!-- Head -->
+    <circle cx="256" cy="300" r="148" fill="url(#head-fur)"/>
+
+    <!-- Whiskers left -->
+    <line x1="242" y1="360" x2="62"  y2="336" stroke="#6A6A6A" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <line x1="240" y1="373" x2="58"  y2="373" stroke="#6A6A6A" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <line x1="242" y1="386" x2="62"  y2="408" stroke="#6A6A6A" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <!-- Whiskers right -->
+    <line x1="270" y1="360" x2="450" y2="336" stroke="#6A6A6A" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <line x1="272" y1="373" x2="454" y2="373" stroke="#6A6A6A" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+    <line x1="270" y1="386" x2="450" y2="408" stroke="#6A6A6A" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+
+    <!-- Eyes -->
+    <circle cx="210" cy="268" r="21" fill="#0D0D0D"/>
+    <circle cx="302" cy="268" r="21" fill="#0D0D0D"/>
+    <!-- Eye shine -->
+    <circle cx="217" cy="261" r="7" fill="#FFFFFF"/>
+    <circle cx="309" cy="261" r="7" fill="#FFFFFF"/>
+
+    <!-- Nose (skin) -->
+    <ellipse cx="256" cy="370" rx="13" ry="10" fill="#C07060"/>
+
+    <!-- Teeth -->
+    <g clip-path="url(#teeth-clip)">
+      <rect x="238" y="400" width="16" height="30" rx="4" fill="#B8A85A"/>
+      <rect x="258" y="400" width="16" height="30" rx="4" fill="#B8A85A"/>
+    </g>
+    <!-- Smile -->
+    <path d="M 228 406 Q 256 426 284 406"
+          stroke="#0D0D0D" stroke-width="7" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>

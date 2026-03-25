@@ -2,10 +2,11 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/24 08:51:53.915049
-Revised: 2026/03/24 17:52:10.037369
+Revised: 2026/03/25 09:36:50.906791
 """
 
 import logging
+import pathlib
 
 import flet as ft
 
@@ -32,6 +33,7 @@ _PUBLIC = {"/login", "/register"}
 def main(page: ft.Page):
     page.title = "ximrato"
     page.theme_mode = ft.ThemeMode.DARK
+    page.window.icon = str(pathlib.Path(__file__).parents[2] / "assets" / "icon.ico")
 
     store = page.session.store
 
