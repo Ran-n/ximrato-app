@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:04:44.000000
-Revised: 2026/03/21 20:44:31.508543
+Revised: 2026/03/25 12:30:45.799469
 """
 
 import logging
@@ -11,32 +11,41 @@ import flet as ft
 import httpx
 
 from ximrato_app.api import users as users_api
+from ximrato_app.i18n import Translator
 
 log = logging.getLogger("ximrato_app.screens.settings")
 
 
 def settings_view(page: ft.Page) -> ft.View:
+    tr = Translator(page.session.store.get("lang", "en"))
     token = page.session.store.get("access_token")
 
     weight_unit = ft.Dropdown(
-        label="Weight unit",
+        label=tr("settings.weight_unit"),
         options=[
             ft.dropdown.Option("kg", "kg"),
             ft.dropdown.Option("lb", "lb"),
         ],
     )
     distance_unit = ft.Dropdown(
-        label="Distance unit",
+        label=tr("settings.distance_unit"),
         options=[
             ft.dropdown.Option("km", "km"),
             ft.dropdown.Option("mi", "mi"),
         ],
     )
     height_unit = ft.Dropdown(
-        label="Height unit",
+        label=tr("settings.height_unit"),
         options=[
             ft.dropdown.Option("cm", "cm"),
             ft.dropdown.Option("in", "in"),
+        ],
+    )
+    language_dd = ft.Dropdown(
+        label=tr("settings.language"),
+        options=[
+            ft.dropdown.Option("en", tr("settings.lang_en")),
+            ft.dropdown.Option("gl", tr("settings.lang_gl")),
         ],
     )
 
@@ -51,17 +60,19 @@ def settings_view(page: ft.Page) -> ft.View:
             original["weight_unit"] = data["weight_unit"]
             original["distance_unit"] = data["distance_unit"]
             original["height_unit"] = data["height_unit"]
+            original["language"] = data["language"]
             weight_unit.value = data["weight_unit"]
             distance_unit.value = data["distance_unit"]
             height_unit.value = data["height_unit"]
+            language_dd.value = data["language"]
             log.info("config loaded")
             page.update()
         except httpx.HTTPStatusError:
-            error.value = "Could not load settings."
+            error.value = tr("settings.err_load")
             error.visible = True
             page.update()
         except httpx.RequestError:
-            error.value = "Could not reach the server."
+            error.value = tr("common.err_server")
             error.visible = True
             page.update()
 
@@ -75,6 +86,8 @@ def settings_view(page: ft.Page) -> ft.View:
             fields["distance_unit"] = distance_unit.value
         if height_unit.value != original.get("height_unit"):
             fields["height_unit"] = height_unit.value
+        if language_dd.value != original.get("language"):
+            fields["language"] = language_dd.value
         if not fields:
             return
         try:
@@ -82,18 +95,21 @@ def settings_view(page: ft.Page) -> ft.View:
             original["weight_unit"] = data["weight_unit"]
             original["distance_unit"] = data["distance_unit"]
             original["height_unit"] = data["height_unit"]
+            original["language"] = data["language"]
             weight_unit.value = data["weight_unit"]
             distance_unit.value = data["distance_unit"]
             height_unit.value = data["height_unit"]
-            status.value = "Settings saved."
+            language_dd.value = data["language"]
+            page.session.store.set("lang", data["language"])
+            status.value = tr("settings.saved")
             status.color = ft.Colors.GREEN_400
             status.visible = True
             log.info("config updated")
         except httpx.HTTPStatusError:
-            error.value = "Something went wrong. Please try again."
+            error.value = tr("common.err_generic")
             error.visible = True
         except httpx.RequestError:
-            error.value = "Could not reach the server."
+            error.value = tr("common.err_server")
             error.visible = True
         page.update()
 
@@ -109,6 +125,7 @@ def settings_view(page: ft.Page) -> ft.View:
     weight_unit.on_change = on_change
     distance_unit.on_change = on_change
     height_unit.on_change = on_change
+    language_dd.on_change = on_change
     page.on_keyboard_event = on_keyboard
 
     load_config()
@@ -116,7 +133,7 @@ def settings_view(page: ft.Page) -> ft.View:
     return ft.View(
         route="/settings",
         appbar=ft.AppBar(
-            title=ft.Text("Unit Settings"),
+            title=ft.Text(tr("settings.title")),
             leading=ft.IconButton(
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/profile"),
@@ -129,9 +146,12 @@ def settings_view(page: ft.Page) -> ft.View:
                         weight_unit,
                         distance_unit,
                         height_unit,
+                        language_dd,
                         error,
                         status,
-                        ft.Button("Save", on_click=on_save, width=float("inf")),
+                        ft.Button(
+                            tr("common.save"), on_click=on_save, width=float("inf")
+                        ),
                     ],
                     spacing=12,
                     width=320,

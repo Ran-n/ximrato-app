@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:04:44.000000
-Revised: 2026/03/25 10:48:34.869756
+Revised: 2026/03/25 12:30:45.411259
 """
 
 import logging
@@ -13,27 +13,29 @@ import httpx
 from ximrato_app.api import auth as auth_api
 from ximrato_app.api import users as users_api
 from ximrato_app.api.errors import parse_422
+from ximrato_app.i18n import Translator
 
 log = logging.getLogger("ximrato_app.screens.account")
 
 
 def account_view(page: ft.Page) -> ft.View:
+    tr = Translator(page.session.store.get("lang", "en"))
     token = page.session.store.get("access_token")
 
-    username = ft.TextField(label="Username", autofocus=True)
-    email = ft.TextField(label="Email", keyboard_type=ft.KeyboardType.EMAIL)
+    username = ft.TextField(label=tr("account.username"), autofocus=True)
+    email = ft.TextField(label=tr("account.email"), keyboard_type=ft.KeyboardType.EMAIL)
     current_password = ft.TextField(
-        label="Current password",
+        label=tr("account.current_password"),
         password=True,
         can_reveal_password=True,
     )
     new_password = ft.TextField(
-        label="New password",
+        label=tr("account.new_password"),
         password=True,
         can_reveal_password=True,
     )
     confirm_password = ft.TextField(
-        label="Confirm new password",
+        label=tr("account.confirm_password"),
         password=True,
         can_reveal_password=True,
     )
@@ -53,11 +55,11 @@ def account_view(page: ft.Page) -> ft.View:
             log.info("account loaded for user_id=%s", data["id"])
             page.update()
         except httpx.HTTPStatusError:
-            error.value = "Could not load account data."
+            error.value = tr("account.err_load")
             error.visible = True
             page.update()
         except httpx.RequestError:
-            error.value = "Could not reach the server."
+            error.value = tr("common.err_server")
             error.visible = True
             page.update()
 
@@ -73,12 +75,12 @@ def account_view(page: ft.Page) -> ft.View:
 
         if new_password.value:
             if not current_password.value:
-                error.value = "Enter your current password to set a new one."
+                error.value = tr("account.err_fill_password")
                 error.visible = True
                 page.update()
                 return
             if new_password.value != confirm_password.value:
-                error.value = "Passwords do not match."
+                error.value = tr("account.err_passwords")
                 error.visible = True
                 page.update()
                 return
@@ -97,28 +99,28 @@ def account_view(page: ft.Page) -> ft.View:
             current_password.value = ""
             new_password.value = ""
             confirm_password.value = ""
-            status.value = "Saved."
+            status.value = tr("common.saved")
             status.color = ft.Colors.GREEN_400
             status.visible = True
             log.info("account updated for user_id=%s", data["id"])
         except httpx.HTTPStatusError as exc:
             code = exc.response.status_code
             if code == 400:
-                error.value = "Current password is incorrect."
+                error.value = tr("account.err_wrong_password")
             elif code == 409:
                 detail = exc.response.json().get("detail", "")
                 error.value = (
-                    "Username already taken."
+                    tr("account.err_username_taken")
                     if "username" in detail
-                    else "Email already registered."
+                    else tr("account.err_email_taken")
                 )
             elif code == 422:
                 error.value = parse_422(exc.response)
             else:
-                error.value = "Something went wrong. Please try again."
+                error.value = tr("common.err_generic")
             error.visible = True
         except httpx.RequestError:
-            error.value = "Could not reach the server."
+            error.value = tr("common.err_server")
             error.visible = True
         page.update()
 
@@ -150,7 +152,7 @@ def account_view(page: ft.Page) -> ft.View:
     return ft.View(
         route="/account",
         appbar=ft.AppBar(
-            title=ft.Text("Account"),
+            title=ft.Text(tr("account.title")),
             leading=ft.IconButton(
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/profile"),
@@ -158,7 +160,7 @@ def account_view(page: ft.Page) -> ft.View:
             actions=[
                 ft.IconButton(
                     ft.Icons.HISTORY,
-                    tooltip="Login history",
+                    tooltip=tr("account.history_tooltip"),
                     on_click=lambda _: page.run_task(page.push_route, "/auth-history"),
                 ),
             ],
@@ -171,7 +173,7 @@ def account_view(page: ft.Page) -> ft.View:
                         email,
                         ft.Divider(height=8),
                         ft.Text(
-                            "Change password",
+                            tr("account.change_password_heading"),
                             size=12,
                             color=ft.Colors.ON_SURFACE_VARIANT,
                         ),
@@ -180,10 +182,12 @@ def account_view(page: ft.Page) -> ft.View:
                         confirm_password,
                         error,
                         status,
-                        ft.Button("Save", on_click=on_save, width=float("inf")),
+                        ft.Button(
+                            tr("common.save"), on_click=on_save, width=float("inf")
+                        ),
                         ft.Divider(height=24),
                         ft.Button(
-                            "Log out",
+                            tr("common.log_out"),
                             icon=ft.Icons.LOGOUT,
                             on_click=on_logout,
                             width=float("inf"),

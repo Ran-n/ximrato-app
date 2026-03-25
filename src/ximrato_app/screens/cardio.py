@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/25 08:02:32.701663
+Revised: 2026/03/25 12:30:45.702381
 """
 
 import asyncio
@@ -14,6 +14,7 @@ import httpx
 
 from ximrato_app.api import cardio as cardio_api
 from ximrato_app.api import users as users_api
+from ximrato_app.i18n import Translator
 
 log = logging.getLogger("ximrato_app.screens.cardio")
 
@@ -46,19 +47,20 @@ def _fmt_date(iso: str) -> str:
 def _log_label(cl: dict, dist_unit: str) -> str:
     name = cl["exercise"]["name"]
     dur = _fmt_duration(cl["duration_seconds"])
-    parts = [f"{name} — {dur}"]
+    parts = [f"{name} \u2014 {dur}"]
     if cl["distance"] is not None:
         parts.append(f"{cl['distance']:g} {dist_unit}")
     if cl["avg_heart_rate"] is not None:
         parts.append(f"{cl['avg_heart_rate']} bpm")
     if cl["elevation_gain"] is not None:
-        parts.append(f"↑{cl['elevation_gain']:g} m")
+        parts.append(f"\u2191{cl['elevation_gain']:g} m")
     if cl["stroke_rate"] is not None:
         parts.append(f"{cl['stroke_rate']} spm")
-    return "  ·  ".join(parts)
+    return "  \u00b7  ".join(parts)
 
 
 def cardio_view(page: ft.Page) -> ft.View:
+    tr = Translator(page.session.store.get("lang", "en"))
     token: str = page.session.store.get("access_token")
 
     # ── state ──────────────────────────────────────────────────────────────────
@@ -74,7 +76,7 @@ def cardio_view(page: ft.Page) -> ft.View:
     error_text = ft.Text("", color=ft.Colors.ERROR, size=13)
 
     # ── idle controls ──────────────────────────────────────────────────────────
-    exercise_dd = ft.Dropdown(label="Type", expand=True)
+    exercise_dd = ft.Dropdown(label=tr("cardio.type"), expand=True)
 
     # ── active controls ────────────────────────────────────────────────────────
     timer_text = ft.Text(
@@ -86,16 +88,24 @@ def cardio_view(page: ft.Page) -> ft.View:
 
     # ── summary controls ───────────────────────────────────────────────────────
     distance_field = ft.TextField(
-        label="Distance", keyboard_type=ft.KeyboardType.NUMBER, width=120
+        label=tr("cardio.distance"),
+        keyboard_type=ft.KeyboardType.NUMBER,
+        width=120,
     )
     hr_field = ft.TextField(
-        label="Avg HR (bpm)", keyboard_type=ft.KeyboardType.NUMBER, width=140
+        label=tr("cardio.avg_hr"),
+        keyboard_type=ft.KeyboardType.NUMBER,
+        width=140,
     )
     elevation_field = ft.TextField(
-        label="Elevation gain (m)", keyboard_type=ft.KeyboardType.NUMBER, width=170
+        label=tr("cardio.elevation"),
+        keyboard_type=ft.KeyboardType.NUMBER,
+        width=170,
     )
     stroke_field = ft.TextField(
-        label="Stroke rate (spm)", keyboard_type=ft.KeyboardType.NUMBER, width=170
+        label=tr("cardio.stroke_rate"),
+        keyboard_type=ft.KeyboardType.NUMBER,
+        width=170,
     )
 
     # ── helpers ─────────────────────────────────────────────────────────────────
@@ -129,7 +139,7 @@ def cardio_view(page: ft.Page) -> ft.View:
         if past_logs:
             history.append(
                 ft.Container(
-                    ft.Text("Past cardio", size=13, weight=ft.FontWeight.BOLD),
+                    ft.Text(tr("cardio.past"), size=13, weight=ft.FontWeight.BOLD),
                     padding=ft.padding.only(left=16, top=8, bottom=4),
                 )
             )
@@ -149,7 +159,7 @@ def cardio_view(page: ft.Page) -> ft.View:
                         ),
                         ft.Container(
                             ft.Button(
-                                "Start cardio",
+                                tr("cardio.start"),
                                 icon=ft.Icons.PLAY_ARROW,
                                 on_click=lambda _: page.run_task(_do_start),
                                 width=float("inf"),
@@ -167,7 +177,6 @@ def cardio_view(page: ft.Page) -> ft.View:
         page.update()
 
     def _render_active() -> None:
-
         ex_name = _selected_name()
         body.controls = [
             ft.Container(
@@ -182,7 +191,7 @@ def cardio_view(page: ft.Page) -> ft.View:
                         timer_text,
                         ft.Container(
                             ft.Button(
-                                "End workout",
+                                tr("cardio.end"),
                                 icon=ft.Icons.STOP_CIRCLE,
                                 on_click=lambda _: page.run_task(_do_end),
                                 width=float("inf"),
@@ -200,10 +209,9 @@ def cardio_view(page: ft.Page) -> ft.View:
         page.update()
 
     def _render_summary() -> None:
-
         ex_name = _selected_name()
         is_rowing = ex_name == _ROWING
-        distance_field.label = f"Distance ({dist_unit})"
+        distance_field.label = tr("cardio.distance_unit", unit=dist_unit)
 
         specific: list = [
             ft.Container(distance_field, padding=ft.Padding.symmetric(horizontal=16)),
@@ -250,7 +258,7 @@ def cardio_view(page: ft.Page) -> ft.View:
                     [
                         error_text,
                         ft.Button(
-                            "Log cardio",
+                            tr("cardio.log"),
                             icon=ft.Icons.CHECK,
                             on_click=lambda _: page.run_task(_do_log),
                             width=float("inf"),
@@ -276,10 +284,10 @@ def cardio_view(page: ft.Page) -> ft.View:
             past_logs = cardio_api.list_cardio_logs(token)
             _render_idle()
         except httpx.HTTPStatusError as exc:
-            error_text.value = f"Error {exc.response.status_code}"
+            error_text.value = tr("common.err_status", code=exc.response.status_code)
             page.update()
         except httpx.RequestError:
-            error_text.value = "Could not reach the server."
+            error_text.value = tr("common.err_server")
             page.update()
 
     async def _tick() -> None:
@@ -294,7 +302,7 @@ def cardio_view(page: ft.Page) -> ft.View:
     async def _do_start() -> None:
         nonlocal started_at
         if not exercise_dd.value:
-            error_text.value = "Select a cardio type"
+            error_text.value = tr("cardio.err_select_type")
             _render_idle(clear_error=False)
             return
         error_text.value = ""
@@ -320,7 +328,7 @@ def cardio_view(page: ft.Page) -> ft.View:
             try:
                 distance = float(dist_str)
             except ValueError:
-                error_text.value = "Enter a valid distance"
+                error_text.value = tr("cardio.err_distance")
                 page.update()
                 return
 
@@ -330,7 +338,7 @@ def cardio_view(page: ft.Page) -> ft.View:
             try:
                 avg_hr = int(hr_str)
             except ValueError:
-                error_text.value = "Enter a valid heart rate"
+                error_text.value = tr("cardio.err_hr")
                 page.update()
                 return
 
@@ -342,7 +350,7 @@ def cardio_view(page: ft.Page) -> ft.View:
                 try:
                     stroke = int(stroke_str)
                 except ValueError:
-                    error_text.value = "Enter a valid stroke rate"
+                    error_text.value = tr("cardio.err_stroke")
                     page.update()
                     return
         else:
@@ -351,7 +359,7 @@ def cardio_view(page: ft.Page) -> ft.View:
                 try:
                     elevation = float(elev_str)
                 except ValueError:
-                    error_text.value = "Enter a valid elevation gain"
+                    error_text.value = tr("cardio.err_elevation")
                     page.update()
                     return
 
@@ -368,10 +376,10 @@ def cardio_view(page: ft.Page) -> ft.View:
             past_logs = cardio_api.list_cardio_logs(token)
             _render_idle()
         except httpx.HTTPStatusError as exc:
-            error_text.value = f"Error {exc.response.status_code}"
+            error_text.value = tr("common.err_status", code=exc.response.status_code)
             page.update()
         except httpx.RequestError:
-            error_text.value = "Could not reach the server."
+            error_text.value = tr("common.err_server")
             page.update()
 
     def on_keyboard(e: ft.KeyboardEvent):
@@ -384,7 +392,7 @@ def cardio_view(page: ft.Page) -> ft.View:
     return ft.View(
         route="/cardio",
         appbar=ft.AppBar(
-            title=ft.Text("Cardio"),
+            title=ft.Text(tr("cardio.title")),
             leading=ft.IconButton(
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/home"),

@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.406117
-Revised: 2026/03/25 10:01:50.940137
+Revised: 2026/03/25 12:30:45.303161
 """
 
 import asyncio
@@ -14,18 +14,18 @@ import httpx
 
 from ximrato_app.api import users as users_api
 from ximrato_app.api.client import get_client
+from ximrato_app.i18n import Translator
 
 log = __import__("logging").getLogger("ximrato_app.screens.home")
 
 
 async def home_view(page: ft.Page) -> ft.View:
+    tr = Translator(page.session.store.get("lang", "en"))
     token = page.session.store.get("access_token")
 
     def on_logout(e):
         page.session.store.clear()
         page.run_task(page.push_route, "/login")
-
-    # --- Pre-fetch avatar before building widget ---
 
     def _fetch_avatar() -> str:
         me = users_api.get_me(token)
@@ -66,14 +66,14 @@ async def home_view(page: ft.Page) -> ft.View:
     profile_btn = ft.Container(
         content=avatar_circle,
         on_click=lambda _: page.run_task(page.push_route, "/profile"),
-        tooltip="Profile",
+        tooltip=tr("home.profile_tooltip"),
         margin=ft.Margin(0, 0, 4, 0),
     )
 
     actions = [
-        (ft.Icons.FITNESS_CENTER, "Session", "/session"),
-        (ft.Icons.DIRECTIONS_RUN, "Cardio", "/cardio"),
-        (ft.Icons.MONITOR_WEIGHT, "Body metrics", "/metrics"),
+        (ft.Icons.FITNESS_CENTER, tr("home.session"), "/session"),
+        (ft.Icons.DIRECTIONS_RUN, tr("home.cardio"), "/cardio"),
+        (ft.Icons.MONITOR_WEIGHT, tr("home.metrics"), "/metrics"),
     ]
 
     page.on_keyboard_event = None
@@ -91,7 +91,11 @@ async def home_view(page: ft.Page) -> ft.View:
             ),
             actions=[
                 profile_btn,
-                ft.IconButton(ft.Icons.LOGOUT, tooltip="Log out", on_click=on_logout),
+                ft.IconButton(
+                    ft.Icons.LOGOUT,
+                    tooltip=tr("home.logout_tooltip"),
+                    on_click=on_logout,
+                ),
             ],
         ),
         controls=[

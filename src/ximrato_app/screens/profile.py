@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.000000
-Revised: 2026/03/24 17:25:27.874296
+Revised: 2026/03/25 12:30:45.508347
 """
 
 import asyncio
@@ -18,19 +18,21 @@ import httpx
 from ximrato_app.api import users as users_api
 from ximrato_app.api.client import get_client
 from ximrato_app.api.errors import parse_422
+from ximrato_app.i18n import Translator
 
 log = logging.getLogger("ximrato_app.screens.profile")
 
-_SEX_OPTIONS = [
-    ft.dropdown.Option("", "Prefer not to say"),
-    ft.dropdown.Option("male", "Male"),
-    ft.dropdown.Option("female", "Female"),
-    ft.dropdown.Option("other", "Other"),
-]
-
 
 async def profile_view(page: ft.Page) -> ft.View:
+    tr = Translator(page.session.store.get("lang", "en"))
     token = page.session.store.get("access_token")
+
+    sex_options = [
+        ft.dropdown.Option("", tr("profile.sex_prefer_not")),
+        ft.dropdown.Option("male", tr("profile.sex_male")),
+        ft.dropdown.Option("female", tr("profile.sex_female")),
+        ft.dropdown.Option("other", tr("profile.sex_other")),
+    ]
 
     # --- Pre-fetch all data before building any widget ---
 
@@ -101,19 +103,21 @@ async def profile_view(page: ft.Page) -> ft.View:
         width=96,
         height=96,
     )
-    remove_btn = ft.TextButton("Remove", visible=bool(initial_b64))
+    remove_btn = ft.TextButton(tr("profile.remove_photo"), visible=bool(initial_b64))
 
     _height_suffix = ft.Text(cfg.get("height_unit", ""))
     display_name = ft.TextField(
-        label="Display name",
-        hint_text="How you want to be called",
+        label=tr("profile.display_name"),
+        hint_text=tr("profile.display_name_hint"),
         value=_original[0]["display_name"],
     )
     sex = ft.Dropdown(
-        label="Sex", options=_SEX_OPTIONS, value=_original[0]["sex"] or ""
+        label=tr("profile.sex"),
+        options=sex_options,
+        value=_original[0]["sex"] or "",
     )
     height = ft.TextField(
-        label="Height",
+        label=tr("profile.height"),
         keyboard_type=ft.KeyboardType.NUMBER,
         suffix=_height_suffix,
         value=_original[0]["height"],
@@ -124,7 +128,7 @@ async def profile_view(page: ft.Page) -> ft.View:
         color=ft.Colors.ON_SURFACE_VARIANT,
     )
     dob_button = ft.TextButton(
-        "Change date of birth" if _selected_dob[0] else "Set date of birth",
+        tr("profile.dob_change") if _selected_dob[0] else tr("profile.dob_set"),
         on_click=lambda _: _pick_date(),
     )
     status = ft.Text(visible=False)
@@ -181,7 +185,7 @@ async def profile_view(page: ft.Page) -> ft.View:
             if val:
                 _selected_dob[0] = val.date() if isinstance(val, datetime) else val
                 dob_text.value = _selected_dob[0].strftime("%B %d, %Y")
-                dob_button.text = "Change date of birth"
+                dob_button.text = tr("profile.dob_change")
                 _clear_status()
                 page.update()
 
@@ -218,7 +222,7 @@ async def profile_view(page: ft.Page) -> ft.View:
                 try:
                     fields["height"] = float(h_val)
                 except ValueError:
-                    error.value = "Height must be a number."
+                    error.value = tr("profile.err_height")
                     error.visible = True
                     page.update()
                     return
@@ -256,21 +260,21 @@ async def profile_view(page: ft.Page) -> ft.View:
                 height.value = _original[0]["height"]
                 log.info("profile updated")
 
-            status.value = "Saved."
+            status.value = tr("common.saved")
             status.color = ft.Colors.GREEN_400
             status.visible = True
         except httpx.HTTPStatusError as exc:
             code = exc.response.status_code
             error.value = (
-                "File too large (max 5 MB)."
+                tr("profile.err_file_large")
                 if pending and code == 413
                 else parse_422(exc.response)
                 if code == 422
-                else "Something went wrong. Please try again."
+                else tr("common.err_generic")
             )
             error.visible = True
         except httpx.RequestError:
-            error.value = "Could not reach the server."
+            error.value = tr("common.err_server")
             error.visible = True
         page.update()
 
@@ -294,7 +298,7 @@ async def profile_view(page: ft.Page) -> ft.View:
     return ft.View(
         route="/profile",
         appbar=ft.AppBar(
-            title=ft.Text("Profile"),
+            title=ft.Text(tr("profile.title")),
             leading=ft.IconButton(
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/home"),
@@ -302,12 +306,12 @@ async def profile_view(page: ft.Page) -> ft.View:
             actions=[
                 ft.IconButton(
                     ft.Icons.MANAGE_ACCOUNTS,
-                    tooltip="Account settings",
+                    tooltip=tr("profile.account_tooltip"),
                     on_click=lambda _: page.run_task(page.push_route, "/account"),
                 ),
                 ft.IconButton(
                     ft.Icons.STRAIGHTEN,
-                    tooltip="Unit settings",
+                    tooltip=tr("profile.settings_tooltip"),
                     on_click=lambda _: page.run_task(page.push_route, "/settings"),
                 ),
             ],
@@ -322,7 +326,7 @@ async def profile_view(page: ft.Page) -> ft.View:
                                 ft.Row(
                                     [
                                         ft.TextButton(
-                                            "Change photo",
+                                            tr("profile.change_photo"),
                                             on_click=_pick_avatar,
                                         ),
                                         remove_btn,
@@ -338,7 +342,7 @@ async def profile_view(page: ft.Page) -> ft.View:
                         ft.Column(
                             [
                                 ft.Text(
-                                    "Date of birth",
+                                    tr("profile.dob"),
                                     size=12,
                                     color=ft.Colors.ON_SURFACE_VARIANT,
                                 ),
@@ -353,7 +357,9 @@ async def profile_view(page: ft.Page) -> ft.View:
                         height,
                         error,
                         status,
-                        ft.Button("Save", on_click=on_save, width=float("inf")),
+                        ft.Button(
+                            tr("common.save"), on_click=on_save, width=float("inf")
+                        ),
                     ],
                     spacing=16,
                     width=320,

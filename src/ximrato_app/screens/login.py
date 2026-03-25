@@ -2,24 +2,30 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.273035
-Revised: 2026/03/25 09:59:09.806065
+Revised: 2026/03/25 12:30:45.094346
 """
 
 import flet as ft
 import httpx
 
 from ximrato_app.api import auth as auth_api
+from ximrato_app.api import users as users_api
+from ximrato_app.i18n import Translator
 
 
 def login_view(page: ft.Page) -> ft.View:
-    username = ft.TextField(label="Username", autofocus=True)
-    password = ft.TextField(label="Password", password=True, can_reveal_password=True)
+    tr = Translator(page.session.store.get("lang", "en"))
+
+    username = ft.TextField(label=tr("login.username"), autofocus=True)
+    password = ft.TextField(
+        label=tr("login.password"), password=True, can_reveal_password=True
+    )
     error = ft.Text(color=ft.Colors.RED_400, visible=False)
 
     def on_login(e):
         error.visible = False
         if not username.value or not password.value:
-            error.value = "Fill in all fields."
+            error.value = tr("login.err_fill_all")
             error.visible = True
             page.update()
             return
@@ -27,19 +33,24 @@ def login_view(page: ft.Page) -> ft.View:
             data = auth_api.login(username.value.strip(), password.value)
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 401:
-                error.value = "Wrong username or password."
+                error.value = tr("login.err_credentials")
             else:
-                error.value = "Something went wrong. Please try again."
+                error.value = tr("common.err_generic")
             error.visible = True
             page.update()
             return
         except httpx.RequestError:
-            error.value = "Could not reach the server."
+            error.value = tr("common.err_server")
             error.visible = True
             page.update()
             return
         page.session.store.set("access_token", data["access_token"])
         page.session.store.set("refresh_token", data["refresh_token"])
+        try:
+            cfg = users_api.get_config(data["access_token"])
+            page.session.store.set("lang", cfg.get("language", "en"))
+        except Exception:
+            page.session.store.set("lang", "en")
         page.run_task(page.push_route, "/home")
 
     username.on_submit = on_login
@@ -69,9 +80,11 @@ def login_view(page: ft.Page) -> ft.View:
                         username,
                         password,
                         error,
-                        ft.Button("Log in", on_click=on_login, width=float("inf")),
+                        ft.Button(
+                            tr("login.submit"), on_click=on_login, width=float("inf")
+                        ),
                         ft.TextButton(
-                            "Don't have an account? Register",
+                            tr("login.to_register"),
                             on_click=lambda _: page.run_task(
                                 page.push_route, "/register"
                             ),
