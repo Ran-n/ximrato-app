@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/25 09:16:51.865396 )
+[//]: # (+ Revised: 	2026/03/25 10:48:34.597909 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -72,6 +72,7 @@ uv run pytest tests/ -v
 - Home screen — launchpad with Session, Cardio, Body metrics buttons
 - Session logging — start session, log sets (exercise dropdown, reps, weight, bodyweight/to_failure flags, RPE), end session, view past sessions
 - Cardio quick log — select type, live timer, end → type-specific fields (Running/Cycling: distance, HR, elevation; Rowing: distance, HR, stroke rate); past logs listed below
+- Login history — `/auth-history` screen listing login/logout/register events with timestamps; logout button on account screen
 - App logo — SVG mascot (`assets/logo.svg`); shown on login, register, and home screens; PNG rendition used as desktop window icon and web favicon
 
 ### To Do
@@ -85,6 +86,7 @@ uv run pytest tests/ -v
 ### Auth
 - Self-registration
 - JWT-based login against the backend
+- Login and logout timestamps recorded per user
 
 ### User Profile & Config
 - Static profile: display name, sex, date of birth, height

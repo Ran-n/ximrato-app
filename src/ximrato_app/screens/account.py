@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:04:44.000000
-Revised: 2026/03/21 20:44:31.330382
+Revised: 2026/03/25 10:48:34.869756
 """
 
 import logging
@@ -10,6 +10,7 @@ import logging
 import flet as ft
 import httpx
 
+from ximrato_app.api import auth as auth_api
 from ximrato_app.api import users as users_api
 from ximrato_app.api.errors import parse_422
 
@@ -126,6 +127,15 @@ def account_view(page: ft.Page) -> ft.View:
         error.visible = False
         page.update()
 
+    def on_logout(e):
+        try:
+            auth_api.logout(token)
+        except Exception:
+            pass
+        page.session.store.set("access_token", None)
+        page.session.store.set("refresh_token", None)
+        page.run_task(page.push_route, "/login")
+
     def on_keyboard(e: ft.KeyboardEvent):
         if e.key == "Escape":
             page.run_task(page.push_route, "/profile")
@@ -145,6 +155,13 @@ def account_view(page: ft.Page) -> ft.View:
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/profile"),
             ),
+            actions=[
+                ft.IconButton(
+                    ft.Icons.HISTORY,
+                    tooltip="Login history",
+                    on_click=lambda _: page.run_task(page.push_route, "/auth-history"),
+                ),
+            ],
         ),
         controls=[
             ft.Container(
@@ -164,6 +181,16 @@ def account_view(page: ft.Page) -> ft.View:
                         error,
                         status,
                         ft.Button("Save", on_click=on_save, width=float("inf")),
+                        ft.Divider(height=24),
+                        ft.Button(
+                            "Log out",
+                            icon=ft.Icons.LOGOUT,
+                            on_click=on_logout,
+                            width=float("inf"),
+                            style=ft.ButtonStyle(
+                                color=ft.Colors.ERROR,
+                            ),
+                        ),
                     ],
                     spacing=12,
                     width=320,

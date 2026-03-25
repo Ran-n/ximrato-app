@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.204590
-Revised: 2026/03/20 09:41:23.920990
+Revised: 2026/03/25 10:48:34.687991
 """
 
 import logging
@@ -31,3 +31,20 @@ def login(username: str, password: str) -> dict:
         r.raise_for_status()
         log.info("login success: status=%d", r.status_code)
         return r.json()
+
+
+def logout(token: str) -> None:
+    log.info("logout request")
+    with get_client(token) as c:
+        r = c.post("/auth/logout")
+        r.raise_for_status()
+    log.info("logout success")
+
+
+def list_auth_events(token: str) -> list[dict]:
+    log.info("list auth events request")
+    with get_client(token) as c:
+        r = c.get("/auth/events")
+        r.raise_for_status()
+    log.info("list auth events success: count=%d", len(r.json()))
+    return r.json()

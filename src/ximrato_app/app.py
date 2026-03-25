@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/24 08:51:53.915049
-Revised: 2026/03/25 09:36:50.906791
+Revised: 2026/03/25 10:48:34.783077
 """
 
 import logging
@@ -11,6 +11,7 @@ import pathlib
 import flet as ft
 
 from ximrato_app.screens.account import account_view
+from ximrato_app.screens.auth_history import auth_history_view
 from ximrato_app.screens.cardio import cardio_view
 from ximrato_app.screens.home import home_view
 from ximrato_app.screens.login import login_view
@@ -61,6 +62,8 @@ def main(page: ft.Page):
             page.views.append(await profile_view(page))
         elif route == "/account":
             page.views.append(account_view(page))
+        elif route == "/auth-history":
+            page.views.append(auth_history_view(page))
         elif route == "/settings":
             page.views.append(settings_view(page))
         elif route == "/session":
