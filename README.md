@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/24 17:49:39.170983 )
+[//]: # (+ Revised: 	2026/03/25 07:53:07.871411 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -71,9 +71,9 @@ uv run pytest tests/ -v
 - Unit tests — sessions API client, users API client (avatar upload/delete), and session screen helpers (formatting, label generation)
 - Home screen — launchpad with Session, Cardio, Body metrics buttons
 - Session logging — start session, log sets (exercise dropdown, reps, weight, bodyweight/to_failure flags, RPE), end session, view past sessions
+- Cardio quick log — select type, live timer, end → type-specific fields (Running/Cycling: distance, HR, elevation; Rowing: distance, HR, stroke rate); past logs listed below
 
 ### To Do
-- Cardio quick log — duration, distance, type (running/cycling/rowing), optional fields
 - Body metrics log — weight, waist, chest, hips, neck, arms, thighs
 - History views — past sessions, cardio logs, body metric trends
 - Token refresh on 401 — auto-retry with refresh token, redirect to login on expiry
