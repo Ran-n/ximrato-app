@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/25 13:00:20.945040
+Revised: 2026/03/27 19:28:36.649959
 """
 
 import logging
@@ -17,6 +17,31 @@ from ximrato_app.i18n import Translator
 from ximrato_app.widgets import lang_flag_btn
 
 log = logging.getLogger("ximrato_app.screens.session")
+
+RPE_LABELS: dict[str, str] = {
+    "no_reps_left": "No reps left",
+    "could_do_1": "Could do 1 more",
+    "could_do_2": "Could do 2 more",
+    "could_do_3": "Could do 3 more",
+    "could_do_4_5": "Could do 4\u20135 more",
+    "very_light": "Very light",
+}
+
+
+def _set_label(
+    s: dict,
+    *,
+    rpe_labels: dict[str, str] = RPE_LABELS,
+    bw_abbrev: str = "BW",
+    rpe_prefix: str = "RPE",
+    to_failure_suffix: str = "  \u2713 to failure",
+) -> str:
+    w = s["weight"]
+    weight_str = bw_abbrev if w == 0 else f"{w:g}"
+    rpe_str = f"  {rpe_prefix}: {rpe_labels[s['rpe']]}" if s["rpe"] else ""
+    failure_str = to_failure_suffix if s["to_failure"] else ""
+    name = s["exercise"]["name"]
+    return f"{name} \u2014 {s['reps']}\u00d7{weight_str}{rpe_str}{failure_str}"
 
 
 def _fmt_duration(started_at: str, ended_at: str | None) -> str:
@@ -50,15 +75,14 @@ def session_view(page: ft.Page) -> ft.View:
         "very_light": tr("session.rpe_very_light"),
     }
 
-    def _set_label(s: dict) -> str:
-        w = s["weight"]
-        weight_str = tr("session.bw_abbrev") if w == 0 else f"{w:g}"
-        rpe_str = (
-            f"  {tr('session.rpe_prefix')}: {rpe_labels[s['rpe']]}" if s["rpe"] else ""
+    def _tr_set_label(s: dict) -> str:
+        return _set_label(
+            s,
+            rpe_labels=rpe_labels,
+            bw_abbrev=tr("session.bw_abbrev"),
+            rpe_prefix=tr("session.rpe_prefix"),
+            to_failure_suffix=tr("session.to_failure_suffix"),
         )
-        failure_str = tr("session.to_failure_suffix") if s["to_failure"] else ""
-        name = s["exercise"]["name"]
-        return f"{name} \u2014 {s['reps']}\u00d7{weight_str}{rpe_str}{failure_str}"
 
     # ── state ──────────────────────────────────────────────────────────────────
     active_session: dict | None = None
@@ -93,7 +117,7 @@ def session_view(page: ft.Page) -> ft.View:
     # ── render helpers ─────────────────────────────────────────────────────────
     def _set_tile(s: dict) -> ft.ListTile:
         return ft.ListTile(
-            title=ft.Text(_set_label(s)),
+            title=ft.Text(_tr_set_label(s)),
             dense=True,
             content_padding=ft.Padding.symmetric(horizontal=16, vertical=0),
         )

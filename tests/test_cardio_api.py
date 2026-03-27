@@ -2,10 +2,13 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/24 18:00:00.000000
-Revised: 2026/03/24 18:03:15.292017
+Revised: 2026/03/27 19:28:36.889837
 """
 
 from unittest.mock import MagicMock, patch
+
+import httpx
+import pytest
 
 from ximrato_app.api import cardio as cardio_api
 
@@ -24,6 +27,18 @@ def _make_mock_client(data, status_code=200):
     return ctx, resp
 
 
+def _http_error(resp, status_code, message="error"):
+    resp.status_code = status_code
+    resp.raise_for_status.side_effect = httpx.HTTPStatusError(
+        message, request=MagicMock(), response=resp
+    )
+
+
+# ---------------------------------------------------------------------------
+# list_cardio_exercises
+# ---------------------------------------------------------------------------
+
+
 def test_list_cardio_exercises_calls_correct_endpoint():
     exercises = [
         {"id": 1, "name": "Cycling"},
@@ -33,8 +48,30 @@ def test_list_cardio_exercises_calls_correct_endpoint():
     ctx, _ = _make_mock_client(exercises)
     with patch("ximrato_app.api.cardio.get_client", return_value=ctx):
         result = cardio_api.list_cardio_exercises("tok")
+
     ctx.get.assert_called_once_with("/cardio/exercises")
     assert result == exercises
+
+
+def test_list_cardio_exercises_returns_empty_list():
+    ctx, _ = _make_mock_client([])
+    with patch("ximrato_app.api.cardio.get_client", return_value=ctx):
+        result = cardio_api.list_cardio_exercises("tok")
+
+    assert result == []
+
+
+def test_list_cardio_exercises_raises_on_http_error():
+    ctx, resp = _make_mock_client(None, status_code=401)
+    _http_error(resp, 401, "unauthorized")
+    with patch("ximrato_app.api.cardio.get_client", return_value=ctx):
+        with pytest.raises(httpx.HTTPStatusError):
+            cardio_api.list_cardio_exercises("tok")
+
+
+# ---------------------------------------------------------------------------
+# create_cardio_log
+# ---------------------------------------------------------------------------
 
 
 def test_create_cardio_log_required_fields_only():
@@ -54,6 +91,7 @@ def test_create_cardio_log_required_fields_only():
         result = cardio_api.create_cardio_log(
             "tok", exercise_id=3, duration_seconds=1800
         )
+
     ctx.post.assert_called_once_with(
         "/cardio",
         json={"exercise_id": 3, "duration_seconds": 1800},
@@ -73,6 +111,7 @@ def test_create_cardio_log_all_fields():
             elevation_gain=50.0,
             stroke_rate=28,
         )
+
     _, kwargs = ctx.post.call_args
     body = kwargs["json"]
     assert body["exercise_id"] == 2
@@ -87,12 +126,26 @@ def test_create_cardio_log_omits_none_optional_fields():
     ctx, _ = _make_mock_client({})
     with patch("ximrato_app.api.cardio.get_client", return_value=ctx):
         cardio_api.create_cardio_log("tok", exercise_id=1, duration_seconds=600)
+
     _, kwargs = ctx.post.call_args
     body = kwargs["json"]
     assert "distance" not in body
     assert "avg_heart_rate" not in body
     assert "elevation_gain" not in body
     assert "stroke_rate" not in body
+
+
+def test_create_cardio_log_raises_on_http_error():
+    ctx, resp = _make_mock_client(None, status_code=422)
+    _http_error(resp, 422, "validation error")
+    with patch("ximrato_app.api.cardio.get_client", return_value=ctx):
+        with pytest.raises(httpx.HTTPStatusError):
+            cardio_api.create_cardio_log("tok", exercise_id=1, duration_seconds=600)
+
+
+# ---------------------------------------------------------------------------
+# list_cardio_logs
+# ---------------------------------------------------------------------------
 
 
 def test_list_cardio_logs_calls_correct_endpoint():
@@ -112,5 +165,22 @@ def test_list_cardio_logs_calls_correct_endpoint():
     ctx, _ = _make_mock_client(logs)
     with patch("ximrato_app.api.cardio.get_client", return_value=ctx):
         result = cardio_api.list_cardio_logs("tok")
+
     ctx.get.assert_called_once_with("/cardio")
     assert result == logs
+
+
+def test_list_cardio_logs_returns_empty_list():
+    ctx, _ = _make_mock_client([])
+    with patch("ximrato_app.api.cardio.get_client", return_value=ctx):
+        result = cardio_api.list_cardio_logs("tok")
+
+    assert result == []
+
+
+def test_list_cardio_logs_raises_on_http_error():
+    ctx, resp = _make_mock_client(None, status_code=500)
+    _http_error(resp, 500, "server error")
+    with patch("ximrato_app.api.cardio.get_client", return_value=ctx):
+        with pytest.raises(httpx.HTTPStatusError):
+            cardio_api.list_cardio_logs("tok")

@@ -2,9 +2,10 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/24 08:51:53.915049
-Revised: 2026/03/27 09:42:27.272184
+Revised: 2026/03/27 19:28:36.423172
 """
 
+import asyncio
 import logging
 import pathlib
 
@@ -100,6 +101,7 @@ async def main(page: ft.Page):
             )
         )
         page.update()
+        await asyncio.sleep(0)  # yield so send loop flushes patch to Flutter first
 
         saved_lang = await prefs.get("lang")
         if saved_lang:

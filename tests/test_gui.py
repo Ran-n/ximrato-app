@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:41:15.000000
-Revised: 2026/03/23 12:25:05.305243
+Revised: 2026/03/27 19:28:37.169090
 """
 
 # GUI smoke tests — requires both services running (see conftest.py).
@@ -19,11 +19,12 @@ Revised: 2026/03/23 12:25:05.305243
 #       No leading  → AppBar actions first (0, 1, …), then body buttons
 #       With leading → leading (0), AppBar actions (1, 2, …), then body buttons
 #   - Per-screen button indices:
-#       Home (no leading): 0=Profile, 1=Log out; body: Session, Cardio, Body metrics
-#       Profile (back=0):  1=account, 2=unit;
+#       Home (no leading): 0=lang, 1=Profile, 2=Log out
+#         body: Session, Cardio, Body metrics
+#       Profile (back=0):  1=lang, 2=account, 3=unit;
 #         body: Change photo, [Remove], sex-dd, dob, save  (Remove only when avatar set)
-#       Settings (back=0): no AppBar actions; body: 1=weight-dd, 2=dist-dd, 3=height-dd
-#       Session active (back=0): 1=end; body: exercise-dd, rpe-dd, add-set
+#       Settings (back=0): 1=lang; body: 2=weight-dd, 3=dist-dd, 4=height-dd
+#       Session active (back=0): 1=lang, 2=end; body: exercise-dd, rpe-dd, add-set
 #   - Avatar: FilePicker opens a native OS dialog — cannot be driven by Playwright.
 #     Only button visibility can be tested.
 #   - Status/error text: locator("flt-semantics").inner_text() contains the text
@@ -91,6 +92,18 @@ def _login(page, app_url, username, password):
 # ---------------------------------------------------------------------------
 
 
+def test_navigate_to_cardio(page, app_url, gui_credentials):
+    _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
+    _click(page, "Cardio")
+    _wait_url(page, "/cardio")
+
+
+def test_navigate_to_metrics(page, app_url, gui_credentials):
+    _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
+    _click(page, "Body metrics")
+    _wait_url(page, "/metrics")
+
+
 def test_register_and_auto_login(page, app_url, gui_credentials):
     page.goto(app_url)
     _wait_url(page, "/login")
@@ -117,7 +130,7 @@ def test_logout_and_login(page, app_url, gui_credentials):
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
 
     page.get_by_role("button").nth(
-        1
+        2
     ).click()  # Log out (home: no leading → actions first)
     _wait_url(page, "/login")
     page.wait_for_timeout(500)
@@ -131,7 +144,7 @@ def test_logout_and_login(page, app_url, gui_credentials):
 def test_login_wrong_password(page, app_url, gui_credentials):
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
 
-    page.get_by_role("button").nth(1).click()  # Log out
+    page.get_by_role("button").nth(2).click()  # Log out
     _wait_url(page, "/login")
     page.wait_for_timeout(500)
 
@@ -147,14 +160,14 @@ def test_navigate_to_profile(page, app_url, gui_credentials):
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
 
     page.get_by_role("button").nth(
-        0
+        1
     ).click()  # Profile (home: no leading → actions first)
     _wait_url(page, "/profile")
 
 
 def test_profile_save_display_name(page, app_url, gui_credentials):
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
-    page.get_by_role("button").nth(0).click()  # Profile
+    page.get_by_role("button").nth(1).click()  # Profile
     _wait_url(page, "/profile")
     page.wait_for_timeout(2000)
 
@@ -167,24 +180,24 @@ def test_profile_save_display_name(page, app_url, gui_credentials):
 
 def test_navigate_to_account(page, app_url, gui_credentials):
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
-    page.get_by_role("button").nth(0).click()  # Profile
+    page.get_by_role("button").nth(1).click()  # Profile
     _wait_url(page, "/profile")
     page.wait_for_timeout(2000)
 
     page.get_by_role("button").nth(
-        1
-    ).click()  # Account (first AppBar action after back)
+        2
+    ).click()  # Account (first AppBar action after back+lang)
     _wait_url(page, "/account")
 
 
 def test_account_wrong_current_password(page, app_url, gui_credentials):
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
-    page.get_by_role("button").nth(0).click()  # Profile
+    page.get_by_role("button").nth(1).click()  # Profile
     _wait_url(page, "/profile")
     page.wait_for_timeout(2000)
     page.get_by_role("button").nth(
-        1
-    ).click()  # Account (first AppBar action after back)
+        2
+    ).click()  # Account (first AppBar action after back+lang)
     _wait_url(page, "/account")
     page.wait_for_timeout(1000)
 
@@ -199,25 +212,30 @@ def test_account_wrong_current_password(page, app_url, gui_credentials):
 
 def test_navigate_to_settings(page, app_url, gui_credentials):
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
-    page.get_by_role("button").nth(0).click()  # Profile
+    page.get_by_role("button").nth(1).click()  # Profile
     _wait_url(page, "/profile")
     page.wait_for_timeout(2000)
 
-    page.get_by_role("button").nth(2).click()  # Unit (second AppBar action after back)
+    page.get_by_role("button").nth(
+        3
+    ).click()  # Unit (second AppBar action after back+lang)
     _wait_url(page, "/settings")
 
 
 def test_settings_change_weight_unit(page, app_url, gui_credentials):
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
-    page.get_by_role("button").nth(0).click()  # Profile
+    page.get_by_role("button").nth(1).click()  # Profile
     _wait_url(page, "/profile")
     page.wait_for_timeout(2000)
-    page.get_by_role("button").nth(2).click()  # Unit (second AppBar action after back)
+    page.get_by_role("button").nth(
+        3
+    ).click()  # Unit (second AppBar action after back+lang)
     _wait_url(page, "/settings")
     page.wait_for_timeout(1000)
 
-    # appbar btn[0]=back; dropdowns btn[1]=weight, btn[2]=distance, btn[3]=height
-    page.get_by_role("button").nth(1).click()
+    # appbar: btn[0]=back, btn[1]=lang
+    # dropdowns: btn[2]=weight, btn[3]=distance, btn[4]=height
+    page.get_by_role("button").nth(2).click()
     page.wait_for_timeout(500)
     _click(page, "lb")
     page.wait_for_timeout(300)
@@ -244,9 +262,9 @@ def test_session_start_and_end(page, app_url, gui_credentials):
             break
         page.wait_for_timeout(500)
 
-    # End session btn is btn[1] — first AppBar action after the back leading button.
+    # End session btn is btn[2] — second AppBar action after back + lang flag.
     def _click_end_session():
-        page.get_by_role("button").nth(1).click()
+        page.get_by_role("button").nth(2).click()
 
     # If a previous run left an active session, end it first so we start clean.
     if not _has_text(page, "Start session"):
@@ -276,7 +294,7 @@ def test_profile_change_photo_button_visible(page, app_url, gui_credentials):
     # FilePicker is a native OS dialog and cannot be driven by Playwright;
     # only verify the button renders and is accessible.
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
-    page.get_by_role("button").nth(0).click()  # Profile (AppBar action 0)
+    page.get_by_role("button").nth(1).click()  # Profile (AppBar action 1, after lang)
     _wait_url(page, "/profile")
     page.wait_for_timeout(2000)
 
