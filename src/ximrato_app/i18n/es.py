@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 13:25:00.000000
-Revised: 2026/03/27 09:59:30.608957
+Revised: 2026/03/27 21:22:49.837604
 """
 
 STRINGS: dict[str, str] = {
@@ -140,4 +140,22 @@ STRINGS: dict[str, str] = {
     "auth_history.register": "Registro",
     # Metrics
     "metrics.title": "Métricas corporales",
+    "metrics.log": "Registrar métricas",
+    "metrics.weight": "Peso ({unit})",
+    "metrics.weight_label": "Peso",
+    "metrics.waist": "Cintura (cm)",
+    "metrics.chest": "Pecho (cm)",
+    "metrics.hips": "Caderas (cm)",
+    "metrics.neck": "Cuello (cm)",
+    "metrics.arms": "Brazos (cm)",
+    "metrics.thighs": "Muslos (cm)",
+    "metrics.past": "Entradas anteriores",
+    "metrics.err_fill_one": "Introduce al menos una medida.",
+    "metrics.err_weight": "Introduce un peso válido.",
+    "metrics.err_waist": "Introduce una medida de cintura válida.",
+    "metrics.err_chest": "Introduce una medida de pecho válida.",
+    "metrics.err_hips": "Introduce una medida de caderas válida.",
+    "metrics.err_neck": "Introduce una medida de cuello válida.",
+    "metrics.err_arms": "Introduce una medida de brazos válida.",
+    "metrics.err_thighs": "Introduce una medida de muslos válida.",
 }

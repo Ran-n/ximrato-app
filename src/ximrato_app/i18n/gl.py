@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 12:30:44.996413
-Revised: 2026/03/25 12:30:44.996413
+Revised: 2026/03/27 21:22:49.918677
 """
 
 STRINGS: dict[str, str] = {
@@ -140,4 +140,22 @@ STRINGS: dict[str, str] = {
     "auth_history.register": "Rexistro",
     # Metrics
     "metrics.title": "M\u00e9tricas corporais",
+    "metrics.log": "Rexistrar m\u00e9tricas",
+    "metrics.weight": "Peso ({unit})",
+    "metrics.weight_label": "Peso",
+    "metrics.waist": "Cintura (cm)",
+    "metrics.chest": "Peito (cm)",
+    "metrics.hips": "Cadeiras (cm)",
+    "metrics.neck": "Pescozo (cm)",
+    "metrics.arms": "Brazos (cm)",
+    "metrics.thighs": "Coxas (cm)",
+    "metrics.past": "Entradas anteriores",
+    "metrics.err_fill_one": "Introduce polo menos unha medida.",
+    "metrics.err_weight": "Introduce un peso v\u00e1lido.",
+    "metrics.err_waist": "Introduce unha medida de cintura v\u00e1lida.",
+    "metrics.err_chest": "Introduce unha medida de peito v\u00e1lida.",
+    "metrics.err_hips": "Introduce unha medida de cadeiras v\u00e1lida.",
+    "metrics.err_neck": "Introduce unha medida de pescozo v\u00e1lida.",
+    "metrics.err_arms": "Introduce unha medida de brazos v\u00e1lida.",
+    "metrics.err_thighs": "Introduce unha medida de coxas v\u00e1lida.",
 }

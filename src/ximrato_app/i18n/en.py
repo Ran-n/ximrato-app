@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 12:30:44.899325
-Revised: 2026/03/25 12:30:44.899325
+Revised: 2026/03/27 21:22:49.756530
 """
 
 STRINGS: dict[str, str] = {
@@ -138,4 +138,22 @@ STRINGS: dict[str, str] = {
     "auth_history.register": "Registered",
     # Metrics
     "metrics.title": "Body metrics",
+    "metrics.log": "Log metrics",
+    "metrics.weight": "Weight ({unit})",
+    "metrics.weight_label": "Weight",
+    "metrics.waist": "Waist (cm)",
+    "metrics.chest": "Chest (cm)",
+    "metrics.hips": "Hips (cm)",
+    "metrics.neck": "Neck (cm)",
+    "metrics.arms": "Arms (cm)",
+    "metrics.thighs": "Thighs (cm)",
+    "metrics.past": "Past entries",
+    "metrics.err_fill_one": "Enter at least one measurement.",
+    "metrics.err_weight": "Enter a valid weight.",
+    "metrics.err_waist": "Enter a valid waist measurement.",
+    "metrics.err_chest": "Enter a valid chest measurement.",
+    "metrics.err_hips": "Enter a valid hips measurement.",
+    "metrics.err_neck": "Enter a valid neck measurement.",
+    "metrics.err_arms": "Enter a valid arms measurement.",
+    "metrics.err_thighs": "Enter a valid thighs measurement.",
 }
