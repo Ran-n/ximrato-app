@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/24 08:51:53.915049
-Revised: 2026/03/25 10:48:34.783077
+Revised: 2026/03/27 09:42:27.272184
 """
 
 import logging
@@ -31,12 +31,15 @@ log = logging.getLogger("ximrato_app")
 _PUBLIC = {"/login", "/register"}
 
 
-def main(page: ft.Page):
+async def main(page: ft.Page):
     page.title = "ximrato"
     page.theme_mode = ft.ThemeMode.DARK
     page.window.icon = str(pathlib.Path(__file__).parents[2] / "assets" / "icon.ico")
 
     store = page.session.store
+
+    prefs = ft.SharedPreferences()
+    store.set("__prefs", prefs)
 
     async def route_change(e):
         route = page.route
@@ -57,9 +60,9 @@ def main(page: ft.Page):
         if route == "/register":
             page.views.append(register_view(page))
         elif route == "/home":
-            page.views.append(await home_view(page))
+            page.views.append(home_view(page))
         elif route == "/profile":
-            page.views.append(await profile_view(page))
+            page.views.append(profile_view(page))
         elif route == "/account":
             page.views.append(account_view(page))
         elif route == "/auth-history":
@@ -82,6 +85,29 @@ def main(page: ft.Page):
             page.views.pop()
             page.run_task(page.push_route, page.views[-1].route)
 
+    async def _init():
+        page.views.clear()
+        page.views.append(
+            ft.View(
+                route="/",
+                controls=[
+                    ft.Container(
+                        content=ft.Image(src="logo.svg", width=96, height=96),
+                        alignment=ft.Alignment(0, 0),
+                        expand=True,
+                    )
+                ],
+            )
+        )
+        page.update()
+
+        saved_lang = await prefs.get("lang")
+        if saved_lang:
+            store.set("lang", saved_lang)
+            store.set("__lang_explicit", True)
+        await route_change(None)
+
+    store.set("__rebuild", route_change)
     page.on_route_change = route_change
     page.on_view_pop = view_pop
-    page.run_task(route_change, None)
+    await _init()

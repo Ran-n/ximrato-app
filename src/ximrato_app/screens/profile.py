@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.000000
-Revised: 2026/03/25 12:30:45.508347
+Revised: 2026/03/27 07:43:00.401045
 """
 
 import asyncio
@@ -19,12 +19,13 @@ from ximrato_app.api import users as users_api
 from ximrato_app.api.client import get_client
 from ximrato_app.api.errors import parse_422
 from ximrato_app.i18n import Translator
+from ximrato_app.widgets import lang_flag_btn
 
 log = logging.getLogger("ximrato_app.screens.profile")
 
 
-async def profile_view(page: ft.Page) -> ft.View:
-    tr = Translator(page.session.store.get("lang", "en"))
+def profile_view(page: ft.Page) -> ft.View:
+    tr = Translator(page.session.store.get("lang") or "en")
     token = page.session.store.get("access_token")
 
     sex_options = [
@@ -34,58 +35,26 @@ async def profile_view(page: ft.Page) -> ft.View:
         ft.dropdown.Option("other", tr("profile.sex_other")),
     ]
 
-    # --- Pre-fetch all data before building any widget ---
-
-    def _fetch_initial() -> tuple[dict, dict, str]:
-        me = users_api.get_me(token)
-        cfg = users_api.get_config(token)
-        src = ""
-        url = me.get("avatar_url")
-        if url:
-            try:
-                with get_client(token) as c:
-                    r = c.get(urlparse(url).path)
-                    r.raise_for_status()
-                src = base64.b64encode(r.content).decode()
-            except Exception:
-                pass
-        return me, cfg, src
-
-    try:
-        me, cfg, initial_b64 = await asyncio.to_thread(_fetch_initial)
-    except (httpx.HTTPStatusError, httpx.RequestError):
-        me, cfg, initial_b64 = {}, {}, ""
-
-    log.info("profile_view: avatar b64 len=%d", len(initial_b64))
-
-    # --- Initialize state from fetched data ---
+    # --- State (mutable via single-element lists) ---
 
     _original: list[dict] = [
-        {
-            "display_name": me.get("display_name") or "",
-            "sex": me.get("sex") or "",
-            "date_of_birth": me.get("date_of_birth") or "",
-            "height": str(me["height"]) if me.get("height") is not None else "",
-        }
+        {"display_name": "", "sex": "", "date_of_birth": "", "height": ""}
     ]
-    _avatar_url: list[str | None] = [me.get("avatar_url")]
-    dob_str = _original[0]["date_of_birth"]
-    _selected_dob: list[date | None] = [
-        date.fromisoformat(dob_str) if dob_str else None
-    ]
+    _avatar_url: list[str | None] = [None]
+    _selected_dob: list[date | None] = [None]
     _pending_avatar: list = [None]
     _date_picker: list[ft.DatePicker | None] = [None]
     _file_picker = ft.FilePicker()
 
-    # --- Build widgets with data already present ---
+    # --- Build widgets with empty/placeholder state ---
 
     _avatar_img = ft.Image(
-        src=initial_b64 or "",
+        src="",
         width=96,
         height=96,
         border_radius=ft.BorderRadius.all(48),
         fit=ft.BoxFit.COVER,
-        visible=bool(initial_b64),
+        visible=False,
     )
     avatar_circle = ft.Stack(
         controls=[
@@ -103,32 +72,28 @@ async def profile_view(page: ft.Page) -> ft.View:
         width=96,
         height=96,
     )
-    remove_btn = ft.TextButton(tr("profile.remove_photo"), visible=bool(initial_b64))
+    remove_btn = ft.TextButton(tr("profile.remove_photo"), visible=False)
 
-    _height_suffix = ft.Text(cfg.get("height_unit", ""))
+    _height_suffix = ft.Text("")
     display_name = ft.TextField(
         label=tr("profile.display_name"),
         hint_text=tr("profile.display_name_hint"),
-        value=_original[0]["display_name"],
+        value="",
     )
     sex = ft.Dropdown(
         label=tr("profile.sex"),
         options=sex_options,
-        value=_original[0]["sex"] or "",
+        value="",
     )
     height = ft.TextField(
         label=tr("profile.height"),
         keyboard_type=ft.KeyboardType.NUMBER,
         suffix=_height_suffix,
-        value=_original[0]["height"],
+        value="",
     )
-    dob_text = ft.Text(
-        _selected_dob[0].strftime("%B %d, %Y") if _selected_dob[0] else "",
-        size=14,
-        color=ft.Colors.ON_SURFACE_VARIANT,
-    )
+    dob_text = ft.Text("", size=14, color=ft.Colors.ON_SURFACE_VARIANT)
     dob_button = ft.TextButton(
-        tr("profile.dob_change") if _selected_dob[0] else tr("profile.dob_set"),
+        tr("profile.dob_set"),
         on_click=lambda _: _pick_date(),
     )
     status = ft.Text(visible=False)
@@ -198,6 +163,49 @@ async def profile_view(page: ft.Page) -> ft.View:
             page.overlay.append(_date_picker[0])
 
         _date_picker[0].open = True
+        page.update()
+
+    # --- Async initial load ---
+
+    async def _load() -> None:
+        def _fetch():
+            me = users_api.get_me(token)
+            cfg = users_api.get_config(token)
+            src = ""
+            url = me.get("avatar_url")
+            if url:
+                try:
+                    with get_client(token) as c:
+                        r = c.get(urlparse(url).path)
+                        r.raise_for_status()
+                    src = base64.b64encode(r.content).decode()
+                except Exception:
+                    pass
+            return me, cfg, src
+
+        try:
+            me, cfg, src = await asyncio.to_thread(_fetch)
+        except (httpx.HTTPStatusError, httpx.RequestError):
+            return
+
+        log.info("profile loaded: avatar b64 len=%d", len(src))
+        _original[0] = {
+            "display_name": me.get("display_name") or "",
+            "sex": me.get("sex") or "",
+            "date_of_birth": me.get("date_of_birth") or "",
+            "height": str(me["height"]) if me.get("height") is not None else "",
+        }
+        _avatar_url[0] = me.get("avatar_url")
+        dob_str = _original[0]["date_of_birth"]
+        if dob_str:
+            _selected_dob[0] = date.fromisoformat(dob_str)
+            dob_text.value = _selected_dob[0].strftime("%B %d, %Y")
+            dob_button.text = tr("profile.dob_change")
+        _height_suffix.value = cfg.get("height_unit", "")
+        display_name.value = _original[0]["display_name"]
+        sex.value = _original[0]["sex"] or ""
+        height.value = _original[0]["height"]
+        _show_avatar(src or None)
         page.update()
 
     # --- Save ---
@@ -294,6 +302,7 @@ async def profile_view(page: ft.Page) -> ft.View:
             page.run_task(page.push_route, "/home")
 
     page.on_keyboard_event = _on_keyboard
+    page.run_task(_load)
 
     return ft.View(
         route="/profile",
@@ -304,6 +313,7 @@ async def profile_view(page: ft.Page) -> ft.View:
                 on_click=lambda _: page.run_task(page.push_route, "/home"),
             ),
             actions=[
+                lang_flag_btn(page),
                 ft.IconButton(
                     ft.Icons.MANAGE_ACCOUNTS,
                     tooltip=tr("profile.account_tooltip"),

@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:04:44.000000
-Revised: 2026/03/25 12:30:45.799469
+Revised: 2026/03/27 07:42:59.692527
 """
 
 import logging
@@ -12,12 +12,13 @@ import httpx
 
 from ximrato_app.api import users as users_api
 from ximrato_app.i18n import Translator
+from ximrato_app.widgets import lang_flag_btn
 
 log = logging.getLogger("ximrato_app.screens.settings")
 
 
 def settings_view(page: ft.Page) -> ft.View:
-    tr = Translator(page.session.store.get("lang", "en"))
+    tr = Translator(page.session.store.get("lang") or "en")
     token = page.session.store.get("access_token")
 
     weight_unit = ft.Dropdown(
@@ -41,30 +42,23 @@ def settings_view(page: ft.Page) -> ft.View:
             ft.dropdown.Option("in", "in"),
         ],
     )
-    language_dd = ft.Dropdown(
-        label=tr("settings.language"),
-        options=[
-            ft.dropdown.Option("en", tr("settings.lang_en")),
-            ft.dropdown.Option("gl", tr("settings.lang_gl")),
-        ],
-    )
 
+    title_text = ft.Text(tr("settings.title"))
     status = ft.Text(visible=False)
     error = ft.Text(color=ft.Colors.RED_400, visible=False)
+    save_btn = ft.Button(tr("common.save"), on_click=None, width=float("inf"))
 
     original: dict = {}
 
-    def load_config():
+    async def load_config():
         try:
             data = users_api.get_config(token)
             original["weight_unit"] = data["weight_unit"]
             original["distance_unit"] = data["distance_unit"]
             original["height_unit"] = data["height_unit"]
-            original["language"] = data["language"]
             weight_unit.value = data["weight_unit"]
             distance_unit.value = data["distance_unit"]
             height_unit.value = data["height_unit"]
-            language_dd.value = data["language"]
             log.info("config loaded")
             page.update()
         except httpx.HTTPStatusError:
@@ -77,6 +71,7 @@ def settings_view(page: ft.Page) -> ft.View:
             page.update()
 
     def on_save(e):
+        cur_tr = Translator(page.session.store.get("lang") or "en")
         error.visible = False
         status.visible = False
         fields = {}
@@ -86,8 +81,6 @@ def settings_view(page: ft.Page) -> ft.View:
             fields["distance_unit"] = distance_unit.value
         if height_unit.value != original.get("height_unit"):
             fields["height_unit"] = height_unit.value
-        if language_dd.value != original.get("language"):
-            fields["language"] = language_dd.value
         if not fields:
             return
         try:
@@ -95,21 +88,18 @@ def settings_view(page: ft.Page) -> ft.View:
             original["weight_unit"] = data["weight_unit"]
             original["distance_unit"] = data["distance_unit"]
             original["height_unit"] = data["height_unit"]
-            original["language"] = data["language"]
             weight_unit.value = data["weight_unit"]
             distance_unit.value = data["distance_unit"]
             height_unit.value = data["height_unit"]
-            language_dd.value = data["language"]
-            page.session.store.set("lang", data["language"])
-            status.value = tr("settings.saved")
+            status.value = cur_tr("settings.saved")
             status.color = ft.Colors.GREEN_400
             status.visible = True
             log.info("config updated")
         except httpx.HTTPStatusError:
-            error.value = tr("common.err_generic")
+            error.value = cur_tr("common.err_generic")
             error.visible = True
         except httpx.RequestError:
-            error.value = tr("common.err_server")
+            error.value = cur_tr("common.err_server")
             error.visible = True
         page.update()
 
@@ -122,22 +112,23 @@ def settings_view(page: ft.Page) -> ft.View:
         if e.key == "Escape":
             page.run_task(page.push_route, "/profile")
 
+    save_btn.on_click = on_save
     weight_unit.on_change = on_change
     distance_unit.on_change = on_change
     height_unit.on_change = on_change
-    language_dd.on_change = on_change
     page.on_keyboard_event = on_keyboard
 
-    load_config()
+    page.run_task(load_config)
 
     return ft.View(
         route="/settings",
         appbar=ft.AppBar(
-            title=ft.Text(tr("settings.title")),
+            title=title_text,
             leading=ft.IconButton(
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/profile"),
             ),
+            actions=[lang_flag_btn(page)],
         ),
         controls=[
             ft.Container(
@@ -146,12 +137,9 @@ def settings_view(page: ft.Page) -> ft.View:
                         weight_unit,
                         distance_unit,
                         height_unit,
-                        language_dd,
                         error,
                         status,
-                        ft.Button(
-                            tr("common.save"), on_click=on_save, width=float("inf")
-                        ),
+                        save_btn,
                     ],
                     spacing=12,
                     width=320,

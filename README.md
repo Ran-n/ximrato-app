@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/25 12:33:32.277278 )
+[//]: # (+ Revised: 	2026/03/27 09:59:40.942107 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -74,7 +74,7 @@ uv run pytest tests/ -v
 - Cardio quick log — select type, live timer, end → type-specific fields (Running/Cycling: distance, HR, elevation; Rowing: distance, HR, stroke rate); past logs listed below
 - Login history — `/auth-history` screen listing login/logout/register events with timestamps; logout button on account screen
 - App logo — SVG mascot (`assets/logo.svg`); shown on login, register, and home screens; PNG rendition used as desktop window icon and web favicon
-- i18n — language switcher in `/settings`; supported languages: English (`en`), Galician (`gl`); preference persisted server-side and loaded on login
+- i18n — flag-button language switcher in every screen's AppBar; supported languages: English (`en`), Galician (`gl`), Spanish (`es`); selection persisted locally via `SharedPreferences` and synced server-side on login/register; async view loading — screens render immediately, data fills in without blocking navigation
 
 ### To Do
 - Body metrics log — weight, waist, chest, hips, neck, arms, thighs

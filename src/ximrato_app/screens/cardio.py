@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/25 12:30:45.702381
+Revised: 2026/03/25 13:00:20.769881
 """
 
 import asyncio
@@ -15,6 +15,7 @@ import httpx
 from ximrato_app.api import cardio as cardio_api
 from ximrato_app.api import users as users_api
 from ximrato_app.i18n import Translator
+from ximrato_app.widgets import lang_flag_btn
 
 log = logging.getLogger("ximrato_app.screens.cardio")
 
@@ -60,7 +61,7 @@ def _log_label(cl: dict, dist_unit: str) -> str:
 
 
 def cardio_view(page: ft.Page) -> ft.View:
-    tr = Translator(page.session.store.get("lang", "en"))
+    tr = Translator(page.session.store.get("lang") or "en")
     token: str = page.session.store.get("access_token")
 
     # ── state ──────────────────────────────────────────────────────────────────
@@ -397,7 +398,7 @@ def cardio_view(page: ft.Page) -> ft.View:
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/home"),
             ),
-            actions=[],
+            actions=[lang_flag_btn(page)],
         ),
         controls=[body],
     )

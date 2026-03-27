@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/25 12:30:45.601432
+Revised: 2026/03/25 13:00:20.945040
 """
 
 import logging
@@ -14,6 +14,7 @@ import httpx
 from ximrato_app.api import sessions as sessions_api
 from ximrato_app.api import users as users_api
 from ximrato_app.i18n import Translator
+from ximrato_app.widgets import lang_flag_btn
 
 log = logging.getLogger("ximrato_app.screens.session")
 
@@ -37,7 +38,7 @@ def _fmt_date(iso: str) -> str:
 
 
 def session_view(page: ft.Page) -> ft.View:
-    tr = Translator(page.session.store.get("lang", "en"))
+    tr = Translator(page.session.store.get("lang") or "en")
     token: str = page.session.store.get("access_token")
 
     rpe_labels: dict[str, str] = {
@@ -321,7 +322,7 @@ def session_view(page: ft.Page) -> ft.View:
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/home"),
             ),
-            actions=[end_btn],
+            actions=[lang_flag_btn(page), end_btn],
         ),
         controls=[body],
     )

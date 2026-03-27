@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.338934
-Revised: 2026/03/25 12:30:45.199066
+Revised: 2026/03/27 09:46:28.432393
 """
 
 import flet as ft
@@ -12,13 +12,24 @@ from ximrato_app.api import auth as auth_api
 from ximrato_app.api import users as users_api
 from ximrato_app.api.errors import parse_422
 from ximrato_app.i18n import Translator
+from ximrato_app.widgets import lang_flag_btn
 
 
 def register_view(page: ft.Page) -> ft.View:
-    tr = Translator(page.session.store.get("lang", "en"))
+    store = page.session.store
+    tr = Translator(store.get("lang") or "en")
 
-    username = ft.TextField(label=tr("register.username"), autofocus=True)
-    email = ft.TextField(label=tr("register.email"))
+    username = ft.TextField(
+        label=tr("register.username"),
+        autofocus=True,
+        value=store.get("__reg_username") or "",
+        on_change=lambda e: store.set("__reg_username", e.control.value),
+    )
+    email = ft.TextField(
+        label=tr("register.email"),
+        value=store.get("__reg_email") or "",
+        on_change=lambda e: store.set("__reg_email", e.control.value),
+    )
     password = ft.TextField(
         label=tr("register.password"), password=True, can_reveal_password=True
     )
@@ -69,13 +80,20 @@ def register_view(page: ft.Page) -> ft.View:
             error.visible = True
             page.update()
             return
-        page.session.store.set("access_token", data["access_token"])
-        page.session.store.set("refresh_token", data["refresh_token"])
+        pre_reg_lang = store.get("lang")
+        store.set("access_token", data["access_token"])
+        store.set("refresh_token", data["refresh_token"])
+        store.set("__reg_username", None)
+        store.set("__reg_email", None)
         try:
-            cfg = users_api.get_config(data["access_token"])
-            page.session.store.set("lang", cfg.get("language", "en"))
+            if pre_reg_lang is not None:
+                users_api.update_config(data["access_token"], language=pre_reg_lang)
+            else:
+                cfg = users_api.get_config(data["access_token"])
+                store.set("lang", cfg.get("language") or "en")
         except Exception:
-            page.session.store.set("lang", "en")
+            if pre_reg_lang is None:
+                store.set("lang", "en")
         page.run_task(page.push_route, "/home")
 
     username.on_submit = on_register
@@ -91,6 +109,7 @@ def register_view(page: ft.Page) -> ft.View:
 
     return ft.View(
         route="/register",
+        appbar=ft.AppBar(actions=[lang_flag_btn(page)], elevation=0),
         controls=[
             ft.Container(
                 content=ft.Column(

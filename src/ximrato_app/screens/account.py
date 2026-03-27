@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:04:44.000000
-Revised: 2026/03/25 12:30:45.411259
+Revised: 2026/03/27 07:42:59.995542
 """
 
 import logging
@@ -14,12 +14,13 @@ from ximrato_app.api import auth as auth_api
 from ximrato_app.api import users as users_api
 from ximrato_app.api.errors import parse_422
 from ximrato_app.i18n import Translator
+from ximrato_app.widgets import lang_flag_btn
 
 log = logging.getLogger("ximrato_app.screens.account")
 
 
 def account_view(page: ft.Page) -> ft.View:
-    tr = Translator(page.session.store.get("lang", "en"))
+    tr = Translator(page.session.store.get("lang") or "en")
     token = page.session.store.get("access_token")
 
     username = ft.TextField(label=tr("account.username"), autofocus=True)
@@ -45,7 +46,7 @@ def account_view(page: ft.Page) -> ft.View:
 
     original: dict = {}
 
-    def load():
+    async def load():
         try:
             data = users_api.get_me(token)
             original["username"] = data["username"]
@@ -147,7 +148,7 @@ def account_view(page: ft.Page) -> ft.View:
         field.on_submit = on_save
     page.on_keyboard_event = on_keyboard
 
-    load()
+    page.run_task(load)
 
     return ft.View(
         route="/account",
@@ -158,6 +159,7 @@ def account_view(page: ft.Page) -> ft.View:
                 on_click=lambda _: page.run_task(page.push_route, "/profile"),
             ),
             actions=[
+                lang_flag_btn(page),
                 ft.IconButton(
                     ft.Icons.HISTORY,
                     tooltip=tr("account.history_tooltip"),

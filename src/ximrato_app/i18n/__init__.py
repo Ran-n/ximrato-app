@@ -6,9 +6,10 @@ Revised: 2026/03/25 12:30:44.797233
 """
 
 from ximrato_app.i18n.en import STRINGS as _EN
+from ximrato_app.i18n.es import STRINGS as _ES
 from ximrato_app.i18n.gl import STRINGS as _GL
 
-_CATALOGS: dict[str, dict[str, str]] = {"en": _EN, "gl": _GL}
+_CATALOGS: dict[str, dict[str, str]] = {"en": _EN, "gl": _GL, "es": _ES}
 _SUPPORTED: frozenset[str] = frozenset(_CATALOGS)
 
 

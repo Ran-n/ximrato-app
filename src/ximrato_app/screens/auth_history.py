@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 10:20:00.000000
-Revised: 2026/03/25 12:30:45.895056
+Revised: 2026/03/25 13:00:20.681801
 """
 
 import logging
@@ -13,6 +13,7 @@ import httpx
 
 from ximrato_app.api import auth as auth_api
 from ximrato_app.i18n import Translator
+from ximrato_app.widgets import lang_flag_btn
 
 log = logging.getLogger("ximrato_app.screens.auth_history")
 
@@ -29,7 +30,7 @@ def _fmt_dt(iso: str) -> str:
 
 
 def auth_history_view(page: ft.Page) -> ft.View:
-    tr = Translator(page.session.store.get("lang", "en"))
+    tr = Translator(page.session.store.get("lang") or "en")
     token: str = page.session.store.get("access_token")
 
     label_map = {
@@ -97,6 +98,7 @@ def auth_history_view(page: ft.Page) -> ft.View:
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/account"),
             ),
+            actions=[lang_flag_btn(page)],
         ),
         controls=[body],
     )

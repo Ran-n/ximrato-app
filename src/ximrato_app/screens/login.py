@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.273035
-Revised: 2026/03/25 12:30:45.094346
+Revised: 2026/03/27 09:46:28.319217
 """
 
 import flet as ft
@@ -11,12 +11,19 @@ import httpx
 from ximrato_app.api import auth as auth_api
 from ximrato_app.api import users as users_api
 from ximrato_app.i18n import Translator
+from ximrato_app.widgets import lang_flag_btn
 
 
 def login_view(page: ft.Page) -> ft.View:
-    tr = Translator(page.session.store.get("lang", "en"))
+    tr = Translator(page.session.store.get("lang") or "en")
 
-    username = ft.TextField(label=tr("login.username"), autofocus=True)
+    store = page.session.store
+    username = ft.TextField(
+        label=tr("login.username"),
+        autofocus=True,
+        value=store.get("__login_username") or "",
+        on_change=lambda e: store.set("__login_username", e.control.value),
+    )
     password = ft.TextField(
         label=tr("login.password"), password=True, can_reveal_password=True
     )
@@ -44,13 +51,21 @@ def login_view(page: ft.Page) -> ft.View:
             error.visible = True
             page.update()
             return
-        page.session.store.set("access_token", data["access_token"])
-        page.session.store.set("refresh_token", data["refresh_token"])
+        store.set("access_token", data["access_token"])
+        store.set("refresh_token", data["refresh_token"])
+        store.set("__login_username", None)
         try:
             cfg = users_api.get_config(data["access_token"])
-            page.session.store.set("lang", cfg.get("language", "en"))
+            server_lang = cfg.get("language") or "en"
+            if store.get("__lang_explicit"):
+                login_lang = store.get("lang") or "en"
+                if login_lang != server_lang:
+                    users_api.update_config(data["access_token"], language=login_lang)
+            else:
+                store.set("lang", server_lang)
         except Exception:
-            page.session.store.set("lang", "en")
+            if store.get("lang") is None:
+                store.set("lang", "en")
         page.run_task(page.push_route, "/home")
 
     username.on_submit = on_login
@@ -59,6 +74,7 @@ def login_view(page: ft.Page) -> ft.View:
 
     return ft.View(
         route="/login",
+        appbar=ft.AppBar(actions=[lang_flag_btn(page)], elevation=0),
         controls=[
             ft.Container(
                 content=ft.Column(

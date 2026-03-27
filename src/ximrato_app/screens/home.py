@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.406117
-Revised: 2026/03/25 12:30:45.303161
+Revised: 2026/03/25 12:51:17.354541
 """
 
 import asyncio
@@ -15,35 +15,28 @@ import httpx
 from ximrato_app.api import users as users_api
 from ximrato_app.api.client import get_client
 from ximrato_app.i18n import Translator
+from ximrato_app.widgets import lang_flag_btn
 
 log = __import__("logging").getLogger("ximrato_app.screens.home")
 
 
-async def home_view(page: ft.Page) -> ft.View:
-    tr = Translator(page.session.store.get("lang", "en"))
+def home_view(page: ft.Page) -> ft.View:
+    tr = Translator(page.session.store.get("lang") or "en")
     token = page.session.store.get("access_token")
 
     def on_logout(e):
-        page.session.store.clear()
+        page.session.store.set("access_token", None)
+        page.session.store.set("refresh_token", None)
         page.run_task(page.push_route, "/login")
 
-    def _fetch_avatar() -> str:
-        me = users_api.get_me(token)
-        url = me.get("avatar_url")
-        if not url:
-            return ""
-        with get_client(token) as c:
-            r = c.get(urlparse(url).path)
-            r.raise_for_status()
-        return base64.b64encode(r.content).decode()
-
-    try:
-        initial_b64 = await asyncio.to_thread(_fetch_avatar)
-    except (httpx.HTTPStatusError, httpx.RequestError, Exception):
-        initial_b64 = ""
-
-    log.info("home_view: avatar b64 len=%d", len(initial_b64))
-
+    _avatar_img = ft.Image(
+        src="",
+        width=32,
+        height=32,
+        border_radius=ft.BorderRadius.all(16),
+        fit=ft.BoxFit.COVER,
+        visible=False,
+    )
     avatar_circle = ft.Stack(
         controls=[
             ft.CircleAvatar(
@@ -51,18 +44,34 @@ async def home_view(page: ft.Page) -> ft.View:
                 bgcolor=ft.Colors.SURFACE_CONTAINER_HIGH,
                 radius=16,
             ),
-            ft.Image(
-                src=initial_b64 or "",
-                width=32,
-                height=32,
-                border_radius=ft.BorderRadius.all(16),
-                fit=ft.BoxFit.COVER,
-                visible=bool(initial_b64),
-            ),
+            _avatar_img,
         ],
         width=32,
         height=32,
     )
+
+    async def _load_avatar():
+        def _fetch() -> str:
+            me = users_api.get_me(token)
+            url = me.get("avatar_url")
+            if not url:
+                return ""
+            with get_client(token) as c:
+                r = c.get(urlparse(url).path)
+                r.raise_for_status()
+            return base64.b64encode(r.content).decode()
+
+        try:
+            b64 = await asyncio.to_thread(_fetch)
+        except (httpx.HTTPStatusError, httpx.RequestError, Exception):
+            return
+
+        log.info("home_view: avatar b64 len=%d", len(b64))
+        if b64:
+            _avatar_img.src = b64
+            _avatar_img.visible = True
+            page.update()
+
     profile_btn = ft.Container(
         content=avatar_circle,
         on_click=lambda _: page.run_task(page.push_route, "/profile"),
@@ -77,6 +86,7 @@ async def home_view(page: ft.Page) -> ft.View:
     ]
 
     page.on_keyboard_event = None
+    page.run_task(_load_avatar)
 
     return ft.View(
         route="/home",
@@ -90,6 +100,7 @@ async def home_view(page: ft.Page) -> ft.View:
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
             actions=[
+                lang_flag_btn(page),
                 profile_btn,
                 ft.IconButton(
                     ft.Icons.LOGOUT,
