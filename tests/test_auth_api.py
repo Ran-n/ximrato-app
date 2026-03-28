@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/27 10:30:00.000000
-Revised: 2026/03/27 19:28:37.593150
+Revised: 2026/03/28 14:34:04.692839
 """
 
 from unittest.mock import MagicMock, patch
@@ -169,3 +169,36 @@ def test_list_auth_events_raises_on_http_error():
     with patch("ximrato_app.api.auth.get_client", return_value=ctx):
         with pytest.raises(httpx.HTTPStatusError):
             auth_api.list_auth_events("tok")
+
+
+# ---------------------------------------------------------------------------
+# refresh
+# ---------------------------------------------------------------------------
+
+
+def test_refresh_posts_to_correct_endpoint():
+    ctx, _ = _make_mock_client({"access_token": "new_acc", "refresh_token": "new_ref"})
+    with patch("ximrato_app.api.auth.get_client", return_value=ctx):
+        auth_api.refresh("old_refresh_tok")
+
+    ctx.post.assert_called_once_with(
+        "/auth/refresh",
+        json={"refresh_token": "old_refresh_tok"},
+    )
+
+
+def test_refresh_returns_new_tokens():
+    payload = {"access_token": "new_acc", "refresh_token": "new_ref"}
+    ctx, _ = _make_mock_client(payload)
+    with patch("ximrato_app.api.auth.get_client", return_value=ctx):
+        result = auth_api.refresh("old_refresh_tok")
+
+    assert result == payload
+
+
+def test_refresh_raises_on_invalid_token():
+    ctx, resp = _make_mock_client(status_code=401)
+    _http_error(ctx, resp, 401, "invalid refresh token")
+    with patch("ximrato_app.api.auth.get_client", return_value=ctx):
+        with pytest.raises(httpx.HTTPStatusError):
+            auth_api.refresh("bad_token")

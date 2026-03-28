@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 10:20:00.000000
-Revised: 2026/03/25 13:00:20.681801
+Revised: 2026/03/28 14:34:04.604759
 """
 
 import logging
@@ -12,6 +12,7 @@ import flet as ft
 import httpx
 
 from ximrato_app.api import auth as auth_api
+from ximrato_app.auth_utils import handle_401
 from ximrato_app.i18n import Translator
 from ximrato_app.widgets import lang_flag_btn
 
@@ -70,11 +71,18 @@ def auth_history_view(page: ft.Page) -> ft.View:
             body.controls = tiles
         page.update()
 
-    async def _load() -> None:
+    async def _load(*, _retried: bool = False) -> None:
+        nonlocal token
         try:
             events = auth_api.list_auth_events(token)
             _render(events)
         except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await _load(_retried=True)
+                return
             error_text.value = tr("common.err_status", code=exc.response.status_code)
             body.controls = [ft.Container(error_text, padding=ft.padding.all(24))]
             page.update()

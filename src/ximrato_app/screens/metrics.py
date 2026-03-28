@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/27 21:22:49.995910
+Revised: 2026/03/28 14:34:04.209329
 """
 
 import asyncio
@@ -14,6 +14,7 @@ import httpx
 
 from ximrato_app.api import metrics as metrics_api
 from ximrato_app.api import users as users_api
+from ximrato_app.auth_utils import handle_401
 from ximrato_app.i18n import Translator
 from ximrato_app.widgets import lang_flag_btn
 
@@ -166,22 +167,28 @@ def metrics_view(page: ft.Page) -> ft.View:
         return value, None
 
     # ── async actions ───────────────────────────────────────────────────────────
-    async def _load() -> None:
-        nonlocal past_entries, weight_unit
+    async def _load(*, _retried: bool = False) -> None:
+        nonlocal past_entries, weight_unit, token
         try:
             cfg = await asyncio.to_thread(users_api.get_config, token)
             weight_unit = cfg.get("weight_unit", "kg")
             past_entries = await asyncio.to_thread(metrics_api.list_body_metrics, token)
             _render()
         except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await _load(_retried=True)
+                return
             error_text.value = tr("common.err_status", code=exc.response.status_code)
             page.update()
         except httpx.RequestError:
             error_text.value = tr("common.err_server")
             page.update()
 
-    async def _do_log() -> None:
-        nonlocal past_entries
+    async def _do_log(*, _retried: bool = False) -> None:
+        nonlocal past_entries, token
         error_text.value = ""
 
         parsed: dict[str, float | None] = {}
@@ -209,6 +216,12 @@ def metrics_view(page: ft.Page) -> ft.View:
             past_entries = await asyncio.to_thread(metrics_api.list_body_metrics, token)
             _render()
         except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await _do_log(_retried=True)
+                return
             error_text.value = tr("common.err_status", code=exc.response.status_code)
             _render(clear_error=False)
         except httpx.RequestError:

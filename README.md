@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/27 21:22:49.674457 )
+[//]: # (+ Revised: 	2026/03/28 14:34:56.425241 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -76,6 +76,7 @@ uv run pytest tests/ -v
 - App logo — SVG mascot (`assets/logo.svg`); shown on login, register, and home screens; PNG rendition used as desktop window icon and web favicon
 - i18n — flag-button language switcher in every screen's AppBar; supported languages: English (`en`), Galician (`gl`), Spanish (`es`); selection persisted locally via `SharedPreferences` and synced server-side on login/register; async view loading — screens render immediately, data fills in without blocking navigation
 - Body metrics — log individual measurements (weight, waist, chest, hips, neck, arms, thighs) as independent per-type records; any combination can be submitted in one form; past entries listed below the form
+- Token refresh on 401 — all screens auto-retry once with the stored refresh token on a 401; redirects to login if the refresh token is also expired or missing; both async and sync handlers covered
 
 ### To Do
 - History views — past sessions, cardio logs, body metric trends

@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:04:44.000000
-Revised: 2026/03/27 07:42:59.692527
+Revised: 2026/03/28 14:34:04.377481
 """
 
 import logging
@@ -11,6 +11,7 @@ import flet as ft
 import httpx
 
 from ximrato_app.api import users as users_api
+from ximrato_app.auth_utils import handle_401, handle_401_sync
 from ximrato_app.i18n import Translator
 from ximrato_app.widgets import lang_flag_btn
 
@@ -50,7 +51,8 @@ def settings_view(page: ft.Page) -> ft.View:
 
     original: dict = {}
 
-    async def load_config():
+    async def load_config(*, _retried: bool = False) -> None:
+        nonlocal token
         try:
             data = users_api.get_config(token)
             original["weight_unit"] = data["weight_unit"]
@@ -61,7 +63,13 @@ def settings_view(page: ft.Page) -> ft.View:
             height_unit.value = data["height_unit"]
             log.info("config loaded")
             page.update()
-        except httpx.HTTPStatusError:
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await load_config(_retried=True)
+                return
             error.value = tr("settings.err_load")
             error.visible = True
             page.update()
@@ -70,7 +78,8 @@ def settings_view(page: ft.Page) -> ft.View:
             error.visible = True
             page.update()
 
-    def on_save(e):
+    def on_save(e, _retried=False):
+        nonlocal token
         cur_tr = Translator(page.session.store.get("lang") or "en")
         error.visible = False
         status.visible = False
@@ -95,7 +104,13 @@ def settings_view(page: ft.Page) -> ft.View:
             status.color = ft.Colors.GREEN_400
             status.visible = True
             log.info("config updated")
-        except httpx.HTTPStatusError:
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_tok = handle_401_sync(page)
+                if new_tok:
+                    token = new_tok
+                    on_save(e, _retried=True)
+                return
             error.value = cur_tr("common.err_generic")
             error.visible = True
         except httpx.RequestError:

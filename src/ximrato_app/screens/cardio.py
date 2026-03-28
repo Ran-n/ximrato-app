@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/25 13:00:20.769881
+Revised: 2026/03/28 14:34:04.131259
 """
 
 import asyncio
@@ -14,6 +14,7 @@ import httpx
 
 from ximrato_app.api import cardio as cardio_api
 from ximrato_app.api import users as users_api
+from ximrato_app.auth_utils import handle_401
 from ximrato_app.i18n import Translator
 from ximrato_app.widgets import lang_flag_btn
 
@@ -273,8 +274,8 @@ def cardio_view(page: ft.Page) -> ft.View:
         page.update()
 
     # ── async actions ───────────────────────────────────────────────────────────
-    async def _load() -> None:
-        nonlocal exercises_list, past_logs, dist_unit
+    async def _load(*, _retried: bool = False) -> None:
+        nonlocal exercises_list, past_logs, dist_unit, token
         try:
             cfg = users_api.get_config(token)
             dist_unit = cfg.get("distance_unit", "km")
@@ -285,6 +286,12 @@ def cardio_view(page: ft.Page) -> ft.View:
             past_logs = cardio_api.list_cardio_logs(token)
             _render_idle()
         except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await _load(_retried=True)
+                return
             error_text.value = tr("common.err_status", code=exc.response.status_code)
             page.update()
         except httpx.RequestError:
@@ -318,8 +325,8 @@ def cardio_view(page: ft.Page) -> ft.View:
         elapsed_seconds = max(1, int((datetime.now() - started_at).total_seconds()))
         _render_summary()
 
-    async def _do_log() -> None:
-        nonlocal past_logs
+    async def _do_log(*, _retried: bool = False) -> None:
+        nonlocal past_logs, token
         error_text.value = ""
         is_rowing = _selected_name() == _ROWING
 
@@ -377,6 +384,12 @@ def cardio_view(page: ft.Page) -> ft.View:
             past_logs = cardio_api.list_cardio_logs(token)
             _render_idle()
         except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await _do_log(_retried=True)
+                return
             error_text.value = tr("common.err_status", code=exc.response.status_code)
             page.update()
         except httpx.RequestError:

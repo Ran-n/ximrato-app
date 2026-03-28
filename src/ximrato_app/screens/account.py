@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:04:44.000000
-Revised: 2026/03/27 07:42:59.995542
+Revised: 2026/03/28 14:34:04.495129
 """
 
 import logging
@@ -13,6 +13,7 @@ import httpx
 from ximrato_app.api import auth as auth_api
 from ximrato_app.api import users as users_api
 from ximrato_app.api.errors import parse_422
+from ximrato_app.auth_utils import handle_401, handle_401_sync
 from ximrato_app.i18n import Translator
 from ximrato_app.widgets import lang_flag_btn
 
@@ -46,7 +47,8 @@ def account_view(page: ft.Page) -> ft.View:
 
     original: dict = {}
 
-    async def load():
+    async def load(*, _retried: bool = False) -> None:
+        nonlocal token
         try:
             data = users_api.get_me(token)
             original["username"] = data["username"]
@@ -55,7 +57,13 @@ def account_view(page: ft.Page) -> ft.View:
             email.value = data["email"]
             log.info("account loaded for user_id=%s", data["id"])
             page.update()
-        except httpx.HTTPStatusError:
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await load(_retried=True)
+                return
             error.value = tr("account.err_load")
             error.visible = True
             page.update()
@@ -64,7 +72,8 @@ def account_view(page: ft.Page) -> ft.View:
             error.visible = True
             page.update()
 
-    def on_save(e):
+    def on_save(e, _retried=False):
+        nonlocal token
         error.visible = False
         status.visible = False
         fields = {}
@@ -106,6 +115,12 @@ def account_view(page: ft.Page) -> ft.View:
             log.info("account updated for user_id=%s", data["id"])
         except httpx.HTTPStatusError as exc:
             code = exc.response.status_code
+            if code == 401 and not _retried:
+                new_tok = handle_401_sync(page)
+                if new_tok:
+                    token = new_tok
+                    on_save(e, _retried=True)
+                return
             if code == 400:
                 error.value = tr("account.err_wrong_password")
             elif code == 409:

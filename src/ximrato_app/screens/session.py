@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/27 19:28:36.649959
+Revised: 2026/03/28 14:34:04.050185
 """
 
 import logging
@@ -13,6 +13,7 @@ import httpx
 
 from ximrato_app.api import sessions as sessions_api
 from ximrato_app.api import users as users_api
+from ximrato_app.auth_utils import handle_401
 from ximrato_app.i18n import Translator
 from ximrato_app.widgets import lang_flag_btn
 
@@ -233,8 +234,8 @@ def session_view(page: ft.Page) -> ft.View:
         page.update()
 
     # ── async actions ──────────────────────────────────────────────────────────
-    async def _load() -> None:
-        nonlocal active_session, past_sessions
+    async def _load(*, _retried: bool = False) -> None:
+        nonlocal active_session, past_sessions, token
         try:
             config = users_api.get_config(token)
             weight_field.suffix = ft.Text(config.get("weight_unit", "kg"))
@@ -251,26 +252,38 @@ def session_view(page: ft.Page) -> ft.View:
                 past_sessions = sessions_api.list_sessions(token)
                 _render_idle()
         except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await _load(_retried=True)
+                return
             error_text.value = tr("common.err_status", code=exc.response.status_code)
             page.update()
         except httpx.RequestError:
             error_text.value = tr("common.err_server")
             page.update()
 
-    async def _do_start() -> None:
-        nonlocal active_session
+    async def _do_start(*, _retried: bool = False) -> None:
+        nonlocal active_session, token
         try:
             active_session = sessions_api.start_session(token)
             _render_active()
         except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await _do_start(_retried=True)
+                return
             error_text.value = tr("common.err_status", code=exc.response.status_code)
             page.update()
         except httpx.RequestError:
             error_text.value = tr("common.err_server")
             page.update()
 
-    async def _do_end() -> None:
-        nonlocal active_session, past_sessions
+    async def _do_end(*, _retried: bool = False) -> None:
+        nonlocal active_session, past_sessions, token
         if active_session is None:
             return
         try:
@@ -279,14 +292,20 @@ def session_view(page: ft.Page) -> ft.View:
             past_sessions = sessions_api.list_sessions(token)
             _render_idle()
         except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await _do_end(_retried=True)
+                return
             error_text.value = tr("common.err_status", code=exc.response.status_code)
             page.update()
         except httpx.RequestError:
             error_text.value = tr("common.err_server")
             page.update()
 
-    async def _do_add_set() -> None:
-        nonlocal active_session
+    async def _do_add_set(*, _retried: bool = False) -> None:
+        nonlocal active_session, token
         error_text.value = ""
 
         if not exercise_dd.value:
@@ -325,6 +344,12 @@ def session_view(page: ft.Page) -> ft.View:
             rpe_dd.value = None
             _render_active()
         except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 401 and not _retried:
+                new_token = await handle_401(page)
+                if new_token:
+                    token = new_token
+                    await _do_add_set(_retried=True)
+                return
             error_text.value = tr("common.err_status", code=exc.response.status_code)
             page.update()
         except httpx.RequestError:
