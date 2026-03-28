@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/28 16:00:09.561435 )
+[//]: # (+ Revised: 	2026/03/28 16:15:35.158652 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -37,6 +37,12 @@ uv run python main.py
 Web:
 ```bash
 uv run flet run --web --port 8080 main.py
+```
+
+Build (Windows exe / Android APK):
+```bash
+uv run flet build windows
+uv run flet build apk
 ```
 
 ## Testing
