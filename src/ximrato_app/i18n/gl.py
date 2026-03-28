@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 12:30:44.996413
-Revised: 2026/03/27 21:22:49.918677
+Revised: 2026/03/28 15:43:56.789281
 """
 
 STRINGS: dict[str, str] = {
@@ -80,6 +80,7 @@ STRINGS: dict[str, str] = {
     "session.title": "Sesi\u00f3n",
     "session.start": "Comezar sesi\u00f3n",
     "session.end_tooltip": "Rematar sesi\u00f3n",
+    "session.history_tooltip": "Historial",
     "session.past": "Sesi\u00f3ns pasadas",
     "session.add_set_heading": "Engadir serie",
     "session.add_set_btn": "Engadir serie",
@@ -122,6 +123,13 @@ STRINGS: dict[str, str] = {
     "cardio.err_hr": "Introduce unha frecuencia card\u00edaca v\u00e1lida",
     "cardio.err_stroke": "Introduce unha frecuencia de palada v\u00e1lida",
     "cardio.err_elevation": "Introduce un desnivel v\u00e1lido",
+    "cardio.history_tooltip": "Historial",
+    # Session History
+    "session_history.title": "Historial de sesi\u00f3ns",
+    "session_history.no_sessions": "Sen sesi\u00f3ns a\u00ednda.",
+    # Cardio History
+    "cardio_history.title": "Historial de cardio",
+    "cardio_history.no_logs": "Sen rexistros de cardio a\u00ednda.",
     # Settings
     "settings.title": "Axustes",
     "settings.weight_unit": "Unidade de peso",
@@ -158,4 +166,6 @@ STRINGS: dict[str, str] = {
     "metrics.err_neck": "Introduce unha medida de pescozo v\u00e1lida.",
     "metrics.err_arms": "Introduce unha medida de brazos v\u00e1lida.",
     "metrics.err_thighs": "Introduce unha medida de coxas v\u00e1lida.",
+    "metrics.entry_one": "entrada",
+    "metrics.entry_many": "entradas",
 }

@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/28 14:34:56.425241 )
+[//]: # (+ Revised: 	2026/03/28 16:00:09.561435 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -68,19 +68,16 @@ uv run pytest tests/ -v
 - Keyboard controls — Enter submits forms on all screens, Escape navigates back where applicable, Tab moves between fields
 - Structured logging — route changes, API requests and responses
 - GUI smoke tests — 15 Playwright tests covering auth, profile, account, settings, session, cardio/metrics navigation, unauthenticated redirect, and avatar button visibility
-- Unit tests — 156 tests across auth API, users API, sessions API, cardio API, i18n (Translator + catalog completeness), error parsing, session screen helpers, and cardio screen helpers
+- Unit tests — 183 tests across auth API, users API, sessions API, cardio API, i18n (Translator + catalog completeness), error parsing, session screen helpers, cardio screen helpers, and metrics screen helpers
 - Home screen — launchpad with Session, Cardio, Body metrics buttons
 - Session logging — start session, log sets (exercise dropdown, reps, weight, bodyweight/to_failure flags, RPE), end session, view past sessions
 - Cardio quick log — select type, live timer, end → type-specific fields (Running/Cycling: distance, HR, elevation; Rowing: distance, HR, stroke rate); past logs listed below
 - Login history — `/auth-history` screen listing login/logout/register events with timestamps; logout button on account screen
 - App logo — SVG mascot (`assets/logo.svg`); shown on login, register, and home screens; PNG rendition used as desktop window icon and web favicon
 - i18n — flag-button language switcher in every screen's AppBar; supported languages: English (`en`), Galician (`gl`), Spanish (`es`); selection persisted locally via `SharedPreferences` and synced server-side on login/register; async view loading — screens render immediately, data fills in without blocking navigation
-- Body metrics — log individual measurements (weight, waist, chest, hips, neck, arms, thighs) as independent per-type records; any combination can be submitted in one form; past entries listed below the form
+- Body metrics — log individual measurements (weight, waist, chest, hips, neck, arms, thighs) as independent per-type records; any combination can be submitted in one form; past entries grouped by type with ↑/↓ delta from the previous entry; all entries listed inside a collapsible tile per type
 - Token refresh on 401 — all screens auto-retry once with the stored refresh token on a 401; redirects to login if the refresh token is also expired or missing; both async and sync handlers covered
-
-### To Do
-- History views — past sessions, cardio logs, body metric trends
-- Token refresh on 401 — auto-retry with refresh token, redirect to login on expiry
+- History views — `/session-history` and `/cardio-history` dedicated screens; accessible via the history (🕐) button in each screen's AppBar; session history lists past sessions as collapsible tiles with set details; cardio history lists past logs with type, duration, and optional stats
 
 ## v1 Scope
 

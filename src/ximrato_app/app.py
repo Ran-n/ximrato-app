@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/24 08:51:53.915049
-Revised: 2026/03/27 19:28:36.423172
+Revised: 2026/03/28 15:43:56.393023
 """
 
 import asyncio
@@ -14,12 +14,14 @@ import flet as ft
 from ximrato_app.screens.account import account_view
 from ximrato_app.screens.auth_history import auth_history_view
 from ximrato_app.screens.cardio import cardio_view
+from ximrato_app.screens.cardio_history import cardio_history_view
 from ximrato_app.screens.home import home_view
 from ximrato_app.screens.login import login_view
 from ximrato_app.screens.metrics import metrics_view
 from ximrato_app.screens.profile import profile_view
 from ximrato_app.screens.register import register_view
 from ximrato_app.screens.session import session_view
+from ximrato_app.screens.session_history import session_history_view
 from ximrato_app.screens.settings import settings_view
 
 logging.basicConfig(
@@ -72,8 +74,12 @@ async def main(page: ft.Page):
             page.views.append(settings_view(page))
         elif route == "/session":
             page.views.append(session_view(page))
+        elif route == "/session-history":
+            page.views.append(session_history_view(page))
         elif route == "/cardio":
             page.views.append(cardio_view(page))
+        elif route == "/cardio-history":
+            page.views.append(cardio_history_view(page))
         elif route == "/metrics":
             page.views.append(metrics_view(page))
         else:

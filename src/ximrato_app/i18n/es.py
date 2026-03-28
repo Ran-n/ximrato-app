@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 13:25:00.000000
-Revised: 2026/03/27 21:22:49.837604
+Revised: 2026/03/28 15:43:56.658769
 """
 
 STRINGS: dict[str, str] = {
@@ -80,6 +80,7 @@ STRINGS: dict[str, str] = {
     "session.title": "Sesión",
     "session.start": "Iniciar sesión",
     "session.end_tooltip": "Terminar sesión",
+    "session.history_tooltip": "Historial",
     "session.past": "Sesiones pasadas",
     "session.add_set_heading": "Añadir serie",
     "session.add_set_btn": "Añadir serie",
@@ -122,6 +123,13 @@ STRINGS: dict[str, str] = {
     "cardio.err_hr": "Introduce una frecuencia cardíaca válida",
     "cardio.err_stroke": "Introduce una frecuencia de palada válida",
     "cardio.err_elevation": "Introduce un desnivel válido",
+    "cardio.history_tooltip": "Historial",
+    # Session History
+    "session_history.title": "Historial de sesiones",
+    "session_history.no_sessions": "Sin sesiones aún.",
+    # Cardio History
+    "cardio_history.title": "Historial de cardio",
+    "cardio_history.no_logs": "Sin registros de cardio aún.",
     # Settings
     "settings.title": "Ajustes",
     "settings.weight_unit": "Unidad de peso",
@@ -158,4 +166,6 @@ STRINGS: dict[str, str] = {
     "metrics.err_neck": "Introduce una medida de cuello válida.",
     "metrics.err_arms": "Introduce una medida de brazos válida.",
     "metrics.err_thighs": "Introduce una medida de muslos válida.",
+    "metrics.entry_one": "entrada",
+    "metrics.entry_many": "entradas",
 }

@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/28 14:34:04.131259
+Revised: 2026/03/28 15:43:56.282366
 """
 
 import asyncio
@@ -67,7 +67,6 @@ def cardio_view(page: ft.Page) -> ft.View:
 
     # ── state ──────────────────────────────────────────────────────────────────
     exercises_list: list[dict] = []
-    past_logs: list[dict] = []
     dist_unit = "km"
     started_at: datetime | None = None
     timer_running = False
@@ -118,14 +117,6 @@ def cardio_view(page: ft.Page) -> ft.View:
         return ""
 
     # ── render ──────────────────────────────────────────────────────────────────
-    def _log_tile(cl: dict) -> ft.ListTile:
-        return ft.ListTile(
-            title=ft.Text(_log_label(cl, dist_unit)),
-            subtitle=ft.Text(_fmt_date(cl["logged_at"]), size=12),
-            dense=True,
-            content_padding=ft.Padding.symmetric(horizontal=16, vertical=0),
-        )
-
     def _render_idle(clear_error: bool = True) -> None:
         nonlocal timer_running
         timer_running = False
@@ -136,16 +127,6 @@ def cardio_view(page: ft.Page) -> ft.View:
         hr_field.value = ""
         elevation_field.value = ""
         stroke_field.value = ""
-
-        history: list = []
-        if past_logs:
-            history.append(
-                ft.Container(
-                    ft.Text(tr("cardio.past"), size=13, weight=ft.FontWeight.BOLD),
-                    padding=ft.padding.only(left=16, top=8, bottom=4),
-                )
-            )
-            history += [_log_tile(cl) for cl in past_logs]
 
         body.controls = [
             ft.Container(
@@ -174,7 +155,6 @@ def cardio_view(page: ft.Page) -> ft.View:
                 padding=ft.padding.only(top=16, bottom=16),
             ),
             ft.Divider(),
-            *history,
         ]
         page.update()
 
@@ -275,7 +255,7 @@ def cardio_view(page: ft.Page) -> ft.View:
 
     # ── async actions ───────────────────────────────────────────────────────────
     async def _load(*, _retried: bool = False) -> None:
-        nonlocal exercises_list, past_logs, dist_unit, token
+        nonlocal exercises_list, dist_unit, token
         try:
             cfg = users_api.get_config(token)
             dist_unit = cfg.get("distance_unit", "km")
@@ -283,7 +263,6 @@ def cardio_view(page: ft.Page) -> ft.View:
             exercise_dd.options = [
                 ft.dropdown.Option(str(ex["id"]), ex["name"]) for ex in exercises_list
             ]
-            past_logs = cardio_api.list_cardio_logs(token)
             _render_idle()
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 401 and not _retried:
@@ -326,7 +305,7 @@ def cardio_view(page: ft.Page) -> ft.View:
         _render_summary()
 
     async def _do_log(*, _retried: bool = False) -> None:
-        nonlocal past_logs, token
+        nonlocal token
         error_text.value = ""
         is_rowing = _selected_name() == _ROWING
 
@@ -381,7 +360,6 @@ def cardio_view(page: ft.Page) -> ft.View:
                 elevation_gain=elevation,
                 stroke_rate=stroke,
             )
-            past_logs = cardio_api.list_cardio_logs(token)
             _render_idle()
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 401 and not _retried:
@@ -411,7 +389,16 @@ def cardio_view(page: ft.Page) -> ft.View:
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/home"),
             ),
-            actions=[lang_flag_btn(page)],
+            actions=[
+                lang_flag_btn(page),
+                ft.IconButton(
+                    ft.Icons.HISTORY,
+                    tooltip=tr("cardio.history_tooltip"),
+                    on_click=lambda _: page.run_task(
+                        page.push_route, "/cardio-history"
+                    ),
+                ),
+            ],
         ),
         controls=[body],
     )

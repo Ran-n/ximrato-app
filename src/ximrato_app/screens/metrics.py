@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/28 14:34:04.209329
+Revised: 2026/03/28 14:46:26.346360
 """
 
 import asyncio
@@ -20,33 +20,37 @@ from ximrato_app.widgets import lang_flag_btn
 
 log = logging.getLogger("ximrato_app.screens.metrics")
 
+_METRIC_ORDER = ["weight", "waist", "chest", "hips", "neck", "arms", "thighs"]
+
 
 def _fmt_date(iso: str) -> str:
     dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
     return dt.strftime("%b %d, %Y  %H:%M")
 
 
-def _entry_label(entry: dict, weight_unit: str, tr) -> str:
-    metric_type = entry["metric_type"]
-    value = entry["value"]
-    if metric_type == "weight":
-        return f"{tr('metrics.weight_label')}: {value:g} {weight_unit}"
-    return f"{tr(f'metrics.{metric_type}')}: {value:g}"
+def _delta_label(latest: float, prev: float) -> str:
+    """Format the change from prev to latest as an arrow + signed value."""
+    delta = latest - prev
+    if delta > 0:
+        return f"\u2191 +{delta:g}"
+    if delta < 0:
+        return f"\u2193 {delta:g}"
+    return "\u2192 \u00b10"
 
 
 def metrics_view(page: ft.Page) -> ft.View:
     tr = Translator(page.session.store.get("lang") or "en")
     token: str = page.session.store.get("access_token")
 
-    # ── state ──────────────────────────────────────────────────────────────────
+    # -- state ------------------------------------------------------------------
     past_entries: list[dict] = []
     weight_unit = "kg"
 
-    # ── shared controls ────────────────────────────────────────────────────────
+    # -- shared controls --------------------------------------------------------
     body = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO, spacing=0)
     error_text = ft.Text("", color=ft.Colors.ERROR, size=13)
 
-    # ── form controls ──────────────────────────────────────────────────────────
+    # -- form controls ----------------------------------------------------------
     weight_field = ft.TextField(
         keyboard_type=ft.KeyboardType.NUMBER,
         width=130,
@@ -92,15 +96,47 @@ def metrics_view(page: ft.Page) -> ft.View:
         "thighs": thighs_field,
     }
 
-    # ── render ──────────────────────────────────────────────────────────────────
-    def _entry_tile(entry: dict) -> ft.ListTile:
-        return ft.ListTile(
-            title=ft.Text(_entry_label(entry, weight_unit, tr)),
-            subtitle=ft.Text(_fmt_date(entry["logged_at"]), size=12),
-            dense=True,
-            content_padding=ft.Padding.symmetric(horizontal=16, vertical=0),
+    # -- history helpers --------------------------------------------------------
+    def _unit_for(metric_type: str) -> str:
+        return weight_unit if metric_type == "weight" else "cm"
+
+    def _type_label(metric_type: str) -> str:
+        if metric_type == "weight":
+            return tr("metrics.weight_label")
+        return tr(f"metrics.{metric_type}").split("(")[0].rstrip()
+
+    def _type_tile(metric_type: str, entries: list[dict]) -> ft.ExpansionTile:
+        """Build a per-type history tile. entries are desc-sorted (newest first)."""
+        unit = _unit_for(metric_type)
+        label = _type_label(metric_type)
+        n = len(entries)
+        latest_val = f"{entries[0]['value']:g} {unit}"
+        entry_word = tr("metrics.entry_one") if n == 1 else tr("metrics.entry_many")
+        count_str = f"{n} {entry_word}"
+
+        if n >= 2:
+            delta_str = _delta_label(entries[0]["value"], entries[1]["value"])
+            subtitle = f"{delta_str}  \u00b7  {count_str}"
+        else:
+            subtitle = count_str
+
+        tile_controls = [
+            ft.ListTile(
+                title=ft.Text(f"{e['value']:g} {unit}"),
+                subtitle=ft.Text(_fmt_date(e["logged_at"]), size=12),
+                dense=True,
+                content_padding=ft.Padding.symmetric(horizontal=16, vertical=0),
+            )
+            for e in entries
+        ]
+
+        return ft.ExpansionTile(
+            title=ft.Text(f"{label} \u2014 {latest_val}"),
+            subtitle=ft.Text(subtitle, size=12),
+            controls=tile_controls,
         )
 
+    # -- render -----------------------------------------------------------------
     def _render(clear_error: bool = True) -> None:
         if clear_error:
             error_text.value = ""
@@ -108,13 +144,19 @@ def metrics_view(page: ft.Page) -> ft.View:
 
         history: list = []
         if past_entries:
+            by_type: dict[str, list[dict]] = {}
+            for e in past_entries:
+                by_type.setdefault(e["metric_type"], []).append(e)
+
             history.append(
                 ft.Container(
                     ft.Text(tr("metrics.past"), size=13, weight=ft.FontWeight.BOLD),
                     padding=ft.padding.only(left=16, top=8, bottom=4),
                 )
             )
-            history += [_entry_tile(e) for e in past_entries]
+            for mt in _METRIC_ORDER:
+                if mt in by_type:
+                    history.append(_type_tile(mt, by_type[mt]))
 
         body.controls = [
             ft.Container(
@@ -155,7 +197,7 @@ def metrics_view(page: ft.Page) -> ft.View:
         ]
         page.update()
 
-    # ── helpers ─────────────────────────────────────────────────────────────────
+    # -- helpers ----------------------------------------------------------------
     def _parse_field(field: ft.TextField, key: str) -> tuple[float | None, str | None]:
         raw = (field.value or "").strip()
         if not raw:
@@ -166,7 +208,7 @@ def metrics_view(page: ft.Page) -> ft.View:
             return None, tr(f"metrics.err_{key}")
         return value, None
 
-    # ── async actions ───────────────────────────────────────────────────────────
+    # -- async actions ----------------------------------------------------------
     async def _load(*, _retried: bool = False) -> None:
         nonlocal past_entries, weight_unit, token
         try:

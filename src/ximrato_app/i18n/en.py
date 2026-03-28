@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 12:30:44.899325
-Revised: 2026/03/27 21:22:49.756530
+Revised: 2026/03/28 15:43:56.536936
 """
 
 STRINGS: dict[str, str] = {
@@ -78,6 +78,7 @@ STRINGS: dict[str, str] = {
     "session.title": "Session",
     "session.start": "Start session",
     "session.end_tooltip": "End session",
+    "session.history_tooltip": "History",
     "session.past": "Past sessions",
     "session.add_set_heading": "Add set",
     "session.add_set_btn": "Add set",
@@ -120,6 +121,13 @@ STRINGS: dict[str, str] = {
     "cardio.err_hr": "Enter a valid heart rate",
     "cardio.err_stroke": "Enter a valid stroke rate",
     "cardio.err_elevation": "Enter a valid elevation gain",
+    "cardio.history_tooltip": "History",
+    # Session History
+    "session_history.title": "Session history",
+    "session_history.no_sessions": "No sessions yet.",
+    # Cardio History
+    "cardio_history.title": "Cardio history",
+    "cardio_history.no_logs": "No cardio logs yet.",
     # Settings
     "settings.title": "Settings",
     "settings.weight_unit": "Weight unit",
@@ -156,4 +164,6 @@ STRINGS: dict[str, str] = {
     "metrics.err_neck": "Enter a valid neck measurement.",
     "metrics.err_arms": "Enter a valid arms measurement.",
     "metrics.err_thighs": "Enter a valid thighs measurement.",
+    "metrics.entry_one": "entry",
+    "metrics.entry_many": "entries",
 }

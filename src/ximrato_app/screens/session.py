@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/28 14:34:04.050185
+Revised: 2026/03/28 15:43:56.165260
 """
 
 import logging
@@ -87,7 +87,6 @@ def session_view(page: ft.Page) -> ft.View:
 
     # ── state ──────────────────────────────────────────────────────────────────
     active_session: dict | None = None
-    past_sessions: list[dict] = []
 
     # ── shared controls ────────────────────────────────────────────────────────
     body = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO, spacing=0)
@@ -123,25 +122,6 @@ def session_view(page: ft.Page) -> ft.View:
             content_padding=ft.Padding.symmetric(horizontal=16, vertical=0),
         )
 
-    def _past_session_tile(ws: dict) -> ft.ExpansionTile:
-        n = len(ws["sets"])
-        word = tr("session.set_one") if n == 1 else tr("session.set_many")
-        duration = _fmt_duration(ws["started_at"], ws["ended_at"])
-        subtitle = f"{n} {word}  \u00b7  {duration}"
-        if ws["notes"]:
-            subtitle += f"  \u00b7  {ws['notes']}"
-        tile_controls = [_set_tile(s) for s in ws["sets"]] or [
-            ft.ListTile(
-                title=ft.Text(tr("session.no_sets_logged"), italic=True),
-                dense=True,
-            )
-        ]
-        return ft.ExpansionTile(
-            title=ft.Text(_fmt_date(ws["started_at"])),
-            subtitle=ft.Text(subtitle, size=12),
-            controls=tile_controls,
-        )
-
     def _render_idle() -> None:
         end_btn.visible = False
         body.controls = [
@@ -162,14 +142,6 @@ def session_view(page: ft.Page) -> ft.View:
                 alignment=ft.Alignment(0, 0),
             ),
         ]
-        if past_sessions:
-            body.controls.append(
-                ft.Container(
-                    ft.Text(tr("session.past"), size=13, weight=ft.FontWeight.BOLD),
-                    padding=ft.padding.only(left=16, top=8, bottom=4),
-                )
-            )
-            body.controls += [_past_session_tile(ws) for ws in past_sessions]
         page.update()
 
     def _render_active() -> None:
@@ -235,7 +207,7 @@ def session_view(page: ft.Page) -> ft.View:
 
     # ── async actions ──────────────────────────────────────────────────────────
     async def _load(*, _retried: bool = False) -> None:
-        nonlocal active_session, past_sessions, token
+        nonlocal active_session, token
         try:
             config = users_api.get_config(token)
             weight_field.suffix = ft.Text(config.get("weight_unit", "kg"))
@@ -249,7 +221,6 @@ def session_view(page: ft.Page) -> ft.View:
             if active_session is not None:
                 _render_active()
             else:
-                past_sessions = sessions_api.list_sessions(token)
                 _render_idle()
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 401 and not _retried:
@@ -283,13 +254,12 @@ def session_view(page: ft.Page) -> ft.View:
             page.update()
 
     async def _do_end(*, _retried: bool = False) -> None:
-        nonlocal active_session, past_sessions, token
+        nonlocal active_session, token
         if active_session is None:
             return
         try:
             sessions_api.end_session(token, active_session["id"])
             active_session = None
-            past_sessions = sessions_api.list_sessions(token)
             _render_idle()
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 401 and not _retried:
@@ -371,7 +341,17 @@ def session_view(page: ft.Page) -> ft.View:
                 ft.Icons.ARROW_BACK,
                 on_click=lambda _: page.run_task(page.push_route, "/home"),
             ),
-            actions=[lang_flag_btn(page), end_btn],
+            actions=[
+                lang_flag_btn(page),
+                ft.IconButton(
+                    ft.Icons.HISTORY,
+                    tooltip=tr("session.history_tooltip"),
+                    on_click=lambda _: page.run_task(
+                        page.push_route, "/session-history"
+                    ),
+                ),
+                end_btn,
+            ],
         ),
         controls=[body],
     )

@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:41:15.000000
-Revised: 2026/03/27 19:28:37.169090
+Revised: 2026/03/28 15:50:21.292574
 """
 
 # GUI smoke tests — requires both services running (see conftest.py).
@@ -262,9 +262,9 @@ def test_session_start_and_end(page, app_url, gui_credentials):
             break
         page.wait_for_timeout(500)
 
-    # End session btn is btn[2] — second AppBar action after back + lang flag.
+    # End session btn is btn[3] — AppBar actions are: lang flag, history, end.
     def _click_end_session():
-        page.get_by_role("button").nth(2).click()
+        page.get_by_role("button").nth(3).click()
 
     # If a previous run left an active session, end it first so we start clean.
     if not _has_text(page, "Start session"):
