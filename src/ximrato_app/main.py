@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/24 08:51:53.915049
-Revised: 2026/03/28 15:43:56.393023
+Revised: 2026/03/31 09:55:44.683920
 """
 
 import asyncio
@@ -28,6 +28,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%H:%M:%S",
+    encoding="utf-8",
 )
 log = logging.getLogger("ximrato_app")
 
@@ -50,12 +51,12 @@ async def main(page: ft.Page):
         log.info("route change: %r authenticated=%s", route, bool(token))
 
         if route not in _PUBLIC and not token:
-            log.info("unauthenticated access to %r → redirecting to /login", route)
+            log.info("unauthenticated access to %r -> redirecting to /login", route)
             page.run_task(page.push_route, "/login")
             return
 
         if route in _PUBLIC and token:
-            log.info("authenticated user on %r → redirecting to /home", route)
+            log.info("authenticated user on %r -> redirecting to /home", route)
             page.run_task(page.push_route, "/home")
             return
 
