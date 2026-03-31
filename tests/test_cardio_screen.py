@@ -162,9 +162,7 @@ def test_log_label_with_stroke_rate():
 
 
 def test_log_label_all_fields():
-    label = _log_label(
-        _make_log(distance=10.0, avg_heart_rate=160, elevation_gain=200.0), "km"
-    )
+    label = _log_label(_make_log(distance=10.0, avg_heart_rate=160, elevation_gain=200.0), "km")
     assert "10 km" in label
     assert "160 bpm" in label
     assert "↑200 m" in label

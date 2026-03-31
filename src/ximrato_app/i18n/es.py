@@ -50,9 +50,7 @@ STRINGS: dict[str, str] = {
     "account.change_password_heading": "Cambiar contraseña",
     "account.history_tooltip": "Historial de accesos",
     "account.err_load": "No se pudieron cargar los datos de la cuenta.",
-    "account.err_fill_password": (
-        "Introduce tu contraseña actual para establecer una nueva."
-    ),
+    "account.err_fill_password": ("Introduce tu contraseña actual para establecer una nueva."),
     "account.err_passwords": "Las contraseñas no coinciden.",
     "account.err_wrong_password": "La contraseña actual es incorrecta.",
     "account.err_username_taken": "El nombre de usuario ya está en uso.",

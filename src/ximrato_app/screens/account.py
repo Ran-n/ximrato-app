@@ -126,9 +126,7 @@ def account_view(page: ft.Page) -> ft.View:
             elif code == 409:
                 detail = exc.response.json().get("detail", "")
                 error.value = (
-                    tr("account.err_username_taken")
-                    if "username" in detail
-                    else tr("account.err_email_taken")
+                    tr("account.err_username_taken") if "username" in detail else tr("account.err_email_taken")
                 )
             elif code == 422:
                 error.value = parse_422(exc.response)
@@ -199,9 +197,7 @@ def account_view(page: ft.Page) -> ft.View:
                         confirm_password,
                         error,
                         status,
-                        ft.Button(
-                            tr("common.save"), on_click=on_save, width=float("inf")
-                        ),
+                        ft.Button(tr("common.save"), on_click=on_save, width=float("inf")),
                         ft.Divider(height=24),
                         ft.Button(
                             tr("common.log_out"),

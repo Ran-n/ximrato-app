@@ -30,9 +30,7 @@ def lang_flag_btn(page: ft.Page) -> ft.Container:
 
     return ft.Container(
         content=ft.PopupMenuButton(
-            content=ft.Image(
-                src=f"flags/{_FLAG_FILE.get(current, current)}.svg", width=24, height=16
-            ),
+            content=ft.Image(src=f"flags/{_FLAG_FILE.get(current, current)}.svg", width=24, height=16),
             tooltip="Switch language",
             padding=ft.Padding.symmetric(horizontal=8, vertical=12),
             menu_position=ft.PopupMenuPosition.UNDER,

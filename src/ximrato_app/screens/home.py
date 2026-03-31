@@ -116,9 +116,7 @@ def home_view(page: ft.Page) -> ft.View:
                         ft.Button(
                             text,
                             icon=icon,
-                            on_click=lambda _, r=route: page.run_task(
-                                page.push_route, r
-                            ),
+                            on_click=lambda _, r=route: page.run_task(page.push_route, r),
                             width=float("inf"),
                         )
                         for icon, text, route in actions

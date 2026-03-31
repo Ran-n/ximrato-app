@@ -38,9 +38,7 @@ def profile_view(page: ft.Page) -> ft.View:
 
     # --- State (mutable via single-element lists) ---
 
-    _original: list[dict] = [
-        {"display_name": "", "sex": "", "date_of_birth": "", "height": ""}
-    ]
+    _original: list[dict] = [{"display_name": "", "sex": "", "date_of_birth": "", "height": ""}]
     _avatar_url: list[str | None] = [None]
     _selected_dob: list[date | None] = [None]
     _pending_avatar: list = [None]
@@ -271,9 +269,7 @@ def profile_view(page: ft.Page) -> ft.View:
                 _original[0]["display_name"] = data.get("display_name") or ""
                 _original[0]["sex"] = data.get("sex") or ""
                 _original[0]["date_of_birth"] = data.get("date_of_birth") or ""
-                _original[0]["height"] = (
-                    str(data["height"]) if data.get("height") is not None else ""
-                )
+                _original[0]["height"] = str(data["height"]) if data.get("height") is not None else ""
                 display_name.value = _original[0]["display_name"]
                 sex.value = _original[0]["sex"] or ""
                 height.value = _original[0]["height"]
@@ -384,9 +380,7 @@ def profile_view(page: ft.Page) -> ft.View:
                         height,
                         error,
                         status,
-                        ft.Button(
-                            tr("common.save"), on_click=on_save, width=float("inf")
-                        ),
+                        ft.Button(tr("common.save"), on_click=on_save, width=float("inf")),
                     ],
                     spacing=16,
                     width=320,

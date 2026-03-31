@@ -200,15 +200,9 @@ def cardio_view(page: ft.Page) -> ft.View:
             ft.Container(hr_field, padding=ft.Padding.symmetric(horizontal=16)),
         ]
         if is_rowing:
-            specific.append(
-                ft.Container(stroke_field, padding=ft.Padding.symmetric(horizontal=16))
-            )
+            specific.append(ft.Container(stroke_field, padding=ft.Padding.symmetric(horizontal=16)))
         else:
-            specific.append(
-                ft.Container(
-                    elevation_field, padding=ft.Padding.symmetric(horizontal=16)
-                )
-            )
+            specific.append(ft.Container(elevation_field, padding=ft.Padding.symmetric(horizontal=16)))
 
         body.controls = [
             ft.Container(
@@ -260,9 +254,7 @@ def cardio_view(page: ft.Page) -> ft.View:
             cfg = users_api.get_config(token)
             dist_unit = cfg.get("distance_unit", "km")
             exercises_list = cardio_api.list_cardio_exercises(token)
-            exercise_dd.options = [
-                ft.dropdown.Option(str(ex["id"]), ex["name"]) for ex in exercises_list
-            ]
+            exercise_dd.options = [ft.dropdown.Option(str(ex["id"]), ex["name"]) for ex in exercises_list]
             _render_idle()
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 401 and not _retried:
@@ -394,9 +386,7 @@ def cardio_view(page: ft.Page) -> ft.View:
                 ft.IconButton(
                     ft.Icons.HISTORY,
                     tooltip=tr("cardio.history_tooltip"),
-                    on_click=lambda _: page.run_task(
-                        page.push_route, "/cardio-history"
-                    ),
+                    on_click=lambda _: page.run_task(page.push_route, "/cardio-history"),
                 ),
             ],
         ),

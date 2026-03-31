@@ -29,9 +29,7 @@ def _make_mock_client(data, status_code=200):
 
 def _http_error(resp, status_code, message="error"):
     resp.status_code = status_code
-    resp.raise_for_status.side_effect = httpx.HTTPStatusError(
-        message, request=MagicMock(), response=resp
-    )
+    resp.raise_for_status.side_effect = httpx.HTTPStatusError(message, request=MagicMock(), response=resp)
 
 
 # ---------------------------------------------------------------------------
@@ -88,9 +86,7 @@ def test_create_cardio_log_required_fields_only():
     }
     ctx, _ = _make_mock_client(log)
     with patch("ximrato_app.api.cardio.get_client", return_value=ctx):
-        result = cardio_api.create_cardio_log(
-            "tok", exercise_id=3, duration_seconds=1800
-        )
+        result = cardio_api.create_cardio_log("tok", exercise_id=3, duration_seconds=1800)
 
     ctx.post.assert_called_once_with(
         "/cardio",

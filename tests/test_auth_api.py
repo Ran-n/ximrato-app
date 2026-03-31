@@ -29,9 +29,7 @@ def _make_mock_client(data=None, status_code=200):
 
 def _http_error(ctx, resp, status_code, message="error"):
     resp.status_code = status_code
-    resp.raise_for_status.side_effect = httpx.HTTPStatusError(
-        message, request=MagicMock(), response=resp
-    )
+    resp.raise_for_status.side_effect = httpx.HTTPStatusError(message, request=MagicMock(), response=resp)
     return ctx, resp
 
 

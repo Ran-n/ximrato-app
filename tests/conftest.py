@@ -29,9 +29,7 @@ GUI_PASS = "***REMOVED***"
 
 
 def pytest_configure(config):
-    config.addinivalue_line(
-        "markers", "gui: requires the Flet web app and server running"
-    )
+    config.addinivalue_line("markers", "gui: requires the Flet web app and server running")
 
 
 @pytest.fixture(scope="session")

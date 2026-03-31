@@ -47,11 +47,7 @@ def _set_label(
 
 def _fmt_duration(started_at: str, ended_at: str | None) -> str:
     start = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
-    end = (
-        datetime.fromisoformat(ended_at.replace("Z", "+00:00"))
-        if ended_at
-        else datetime.now(timezone.utc)
-    )
+    end = datetime.fromisoformat(ended_at.replace("Z", "+00:00")) if ended_at else datetime.now(timezone.utc)
     minutes = int((end - start).total_seconds() // 60)
     if minutes < 60:
         return f"{minutes} min"
@@ -100,12 +96,8 @@ def session_view(page: ft.Page) -> ft.View:
 
     # ── add-set form fields ────────────────────────────────────────────────────
     exercise_dd = ft.Dropdown(label=tr("session.exercise"), expand=True)
-    reps_field = ft.TextField(
-        label=tr("session.reps"), keyboard_type=ft.KeyboardType.NUMBER, width=80
-    )
-    weight_field = ft.TextField(
-        label=tr("session.weight"), keyboard_type=ft.KeyboardType.NUMBER, width=110
-    )
+    reps_field = ft.TextField(label=tr("session.reps"), keyboard_type=ft.KeyboardType.NUMBER, width=80)
+    weight_field = ft.TextField(label=tr("session.weight"), keyboard_type=ft.KeyboardType.NUMBER, width=110)
     bw_check = ft.Checkbox(label=tr("session.bw_counted"), value=False)
     failure_check = ft.Checkbox(label=tr("session.to_failure"), value=False)
     rpe_dd = ft.Dropdown(
@@ -213,9 +205,7 @@ def session_view(page: ft.Page) -> ft.View:
             weight_field.suffix = ft.Text(config.get("weight_unit", "kg"))
 
             exercises = sessions_api.list_exercises(token)
-            exercise_dd.options = [
-                ft.dropdown.Option(str(ex["id"]), ex["name"]) for ex in exercises
-            ]
+            exercise_dd.options = [ft.dropdown.Option(str(ex["id"]), ex["name"]) for ex in exercises]
 
             active_session = sessions_api.get_active_session(token)
             if active_session is not None:
@@ -346,9 +336,7 @@ def session_view(page: ft.Page) -> ft.View:
                 ft.IconButton(
                     ft.Icons.HISTORY,
                     tooltip=tr("session.history_tooltip"),
-                    on_click=lambda _: page.run_task(
-                        page.push_route, "/session-history"
-                    ),
+                    on_click=lambda _: page.run_task(page.push_route, "/session-history"),
                 ),
                 end_btn,
             ],

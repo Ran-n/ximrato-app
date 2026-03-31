@@ -50,9 +50,7 @@ STRINGS: dict[str, str] = {
     "account.change_password_heading": "Cambiar contrasinal",
     "account.history_tooltip": "Historial de accesos",
     "account.err_load": "Non se puideron cargar os datos da conta.",
-    "account.err_fill_password": (
-        "Introduce o teu contrasinal actual para estabelecer un novo."
-    ),
+    "account.err_fill_password": ("Introduce o teu contrasinal actual para estabelecer un novo."),
     "account.err_passwords": "Os contrasinais non coinciden.",
     "account.err_wrong_password": "O contrasinal actual \u00e9 incorrecto.",
     "account.err_username_taken": "O nome de usuario xa est\u00e1 en uso.",

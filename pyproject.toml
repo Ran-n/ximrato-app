@@ -1,14 +1,10 @@
 [project]
 name = "ximrato-app"
-version = "0.2.2"
+version = "0.2.3"
 description = "Cross-platform fitness logger frontend"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "flet>=0.27.0",
-    "httpx>=0.28.0",
-    "python-dotenv>=1.0.0",
-]
+dependencies = ["flet>=0.27.0", "httpx>=0.28.0", "python-dotenv>=1.0.0"]
 
 [build-system]
 requires = ["setuptools"]
@@ -20,14 +16,48 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = [".", "src"]
 
+[tool.flet]
+org = "com.ximrato"
+product = "Ximrato"
+copyright = "© 2026 Ran#"
+
 [tool.flet.app]
-exclude = [".venv", ".git", "tests", "build", ".pytest_cache", ".ruff_cache", "*.egg-info", "uv.lock", ".python-version", ".env", ".env.example"]
+icon = "assets/icon.png"
+
+exclude = [
+    ".venv",
+    ".git",
+    "tests",
+    "build",
+    ".pytest_cache",
+    ".ruff_cache",
+    "*.egg-info",
+    "uv.lock",
+    ".python-version",
+    ".env",
+    ".env.example",
+]
+
+[tool.flet.splash]
+color = "#1A1A1A"
+dark_color = "#1A1A1A"
+web = true
+ios = true
+android = true
 
 [tool.ruff]
-line-length = 88
+line-length = 120
+target-version = "py313"
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+docstring-code-format = true
 
 [dependency-groups]
 dev = [

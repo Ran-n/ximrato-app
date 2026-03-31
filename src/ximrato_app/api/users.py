@@ -25,9 +25,7 @@ def get_me(token: str) -> dict:
 def update_me(token: str, **fields) -> dict:
     log.info("update_me request: fields=%r", list(fields))
     with get_client(token) as c:
-        r = c.patch(
-            "/users/me", json={k: v for k, v in fields.items() if v is not None}
-        )
+        r = c.patch("/users/me", json={k: v for k, v in fields.items() if v is not None})
         r.raise_for_status()
         log.info("update_me success")
         return r.json()
@@ -54,9 +52,7 @@ def update_config(token: str, **fields) -> dict:
         return r.json()
 
 
-def upload_avatar(
-    token: str, data: bytes, filename: str, mime: str | None = None
-) -> None:
+def upload_avatar(token: str, data: bytes, filename: str, mime: str | None = None) -> None:
     log.info("upload_avatar request: filename=%r", filename)
     if mime is None:
         mime = mimetypes.guess_type(filename)[0] or "application/octet-stream"

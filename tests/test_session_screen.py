@@ -157,9 +157,7 @@ def test_set_label_with_to_failure():
 
 
 def test_set_label_all_options():
-    label = _set_label(
-        _make_set(weight=100.0, reps=5, rpe="could_do_1", to_failure=True)
-    )
+    label = _set_label(_make_set(weight=100.0, reps=5, rpe="could_do_1", to_failure=True))
     assert "Squat" in label
     assert "5×100" in label
     assert RPE_LABELS["could_do_1"] in label

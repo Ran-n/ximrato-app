@@ -24,9 +24,7 @@ def login_view(page: ft.Page) -> ft.View:
         value=store.get("__login_username") or "",
         on_change=lambda e: store.set("__login_username", e.control.value),
     )
-    password = ft.TextField(
-        label=tr("login.password"), password=True, can_reveal_password=True
-    )
+    password = ft.TextField(label=tr("login.password"), password=True, can_reveal_password=True)
     error = ft.Text(color=ft.Colors.RED_400, visible=False)
 
     def on_login(e):
@@ -96,14 +94,10 @@ def login_view(page: ft.Page) -> ft.View:
                         username,
                         password,
                         error,
-                        ft.Button(
-                            tr("login.submit"), on_click=on_login, width=float("inf")
-                        ),
+                        ft.Button(tr("login.submit"), on_click=on_login, width=float("inf")),
                         ft.TextButton(
                             tr("login.to_register"),
-                            on_click=lambda _: page.run_task(
-                                page.push_route, "/register"
-                            ),
+                            on_click=lambda _: page.run_task(page.push_route, "/register"),
                         ),
                     ],
                     spacing=12,

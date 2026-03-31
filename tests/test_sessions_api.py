@@ -30,9 +30,7 @@ def _make_mock_client(data, status_code=200):
 
 def _http_error(resp, status_code, message="error"):
     resp.status_code = status_code
-    resp.raise_for_status.side_effect = httpx.HTTPStatusError(
-        message, request=MagicMock(), response=resp
-    )
+    resp.raise_for_status.side_effect = httpx.HTTPStatusError(message, request=MagicMock(), response=resp)
 
 
 # ---------------------------------------------------------------------------
@@ -287,6 +285,4 @@ def test_add_set_raises_on_http_error():
     _http_error(resp, 422, "validation error")
     with patch("ximrato_app.api.sessions.get_client", return_value=ctx):
         with pytest.raises(httpx.HTTPStatusError):
-            sessions_api.add_set(
-                "tok", session_id=1, exercise_id=1, reps=10, weight=0.0
-            )
+            sessions_api.add_set("tok", session_id=1, exercise_id=1, reps=10, weight=0.0)

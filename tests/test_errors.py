@@ -23,9 +23,7 @@ def _mock_response(detail):
 
 def test_parse_422_with_loc_and_msg():
     detail = [{"loc": ["body", "email"], "msg": "value is not a valid email address"}]
-    assert (
-        parse_422(_mock_response(detail)) == "email: value is not a valid email address"
-    )
+    assert parse_422(_mock_response(detail)) == "email: value is not a valid email address"
 
 
 def test_parse_422_filters_body_from_loc():

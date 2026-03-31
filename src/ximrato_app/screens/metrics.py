@@ -250,9 +250,7 @@ def metrics_view(page: ft.Page) -> ft.View:
 
         try:
             for metric_type, value in to_log:
-                await asyncio.to_thread(
-                    metrics_api.create_body_metric, token, metric_type, value
-                )
+                await asyncio.to_thread(metrics_api.create_body_metric, token, metric_type, value)
             for field in _field_map.values():
                 field.value = ""
             past_entries = await asyncio.to_thread(metrics_api.list_body_metrics, token)

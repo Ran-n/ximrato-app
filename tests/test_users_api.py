@@ -31,9 +31,7 @@ def _make_mock_client(data=None, status_code=200):
 
 def _http_error(resp, status_code, message="error"):
     resp.status_code = status_code
-    resp.raise_for_status.side_effect = httpx.HTTPStatusError(
-        message, request=MagicMock(), response=resp
-    )
+    resp.raise_for_status.side_effect = httpx.HTTPStatusError(message, request=MagicMock(), response=resp)
 
 
 # ---------------------------------------------------------------------------
@@ -237,9 +235,7 @@ def test_upload_avatar_detects_jpeg_mime():
 def test_upload_avatar_uses_explicit_mime_when_provided():
     ctx, _ = _make_mock_client(status_code=204)
     with patch("ximrato_app.api.users.get_client", return_value=ctx):
-        users_api.upload_avatar(
-            "tok", b"\xff\xd8\xff\xe0", "photo.jpg", mime="image/webp"
-        )
+        users_api.upload_avatar("tok", b"\xff\xd8\xff\xe0", "photo.jpg", mime="image/webp")
 
     _, kwargs = ctx.post.call_args
     _filename, _data, mime = kwargs["files"]["file"]

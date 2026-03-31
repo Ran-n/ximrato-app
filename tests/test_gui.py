@@ -129,9 +129,7 @@ def test_register_and_auto_login(page, app_url, gui_credentials):
 def test_logout_and_login(page, app_url, gui_credentials):
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
 
-    page.get_by_role("button").nth(
-        2
-    ).click()  # Log out (home: no leading → actions first)
+    page.get_by_role("button").nth(2).click()  # Log out (home: no leading → actions first)
     _wait_url(page, "/login")
     page.wait_for_timeout(500)
 
@@ -159,9 +157,7 @@ def test_login_wrong_password(page, app_url, gui_credentials):
 def test_navigate_to_profile(page, app_url, gui_credentials):
     _login(page, app_url, gui_credentials["username"], gui_credentials["password"])
 
-    page.get_by_role("button").nth(
-        1
-    ).click()  # Profile (home: no leading → actions first)
+    page.get_by_role("button").nth(1).click()  # Profile (home: no leading → actions first)
     _wait_url(page, "/profile")
 
 
@@ -184,9 +180,7 @@ def test_navigate_to_account(page, app_url, gui_credentials):
     _wait_url(page, "/profile")
     page.wait_for_timeout(2000)
 
-    page.get_by_role("button").nth(
-        2
-    ).click()  # Account (first AppBar action after back+lang)
+    page.get_by_role("button").nth(2).click()  # Account (first AppBar action after back+lang)
     _wait_url(page, "/account")
 
 
@@ -195,9 +189,7 @@ def test_account_wrong_current_password(page, app_url, gui_credentials):
     page.get_by_role("button").nth(1).click()  # Profile
     _wait_url(page, "/profile")
     page.wait_for_timeout(2000)
-    page.get_by_role("button").nth(
-        2
-    ).click()  # Account (first AppBar action after back+lang)
+    page.get_by_role("button").nth(2).click()  # Account (first AppBar action after back+lang)
     _wait_url(page, "/account")
     page.wait_for_timeout(1000)
 
@@ -216,9 +208,7 @@ def test_navigate_to_settings(page, app_url, gui_credentials):
     _wait_url(page, "/profile")
     page.wait_for_timeout(2000)
 
-    page.get_by_role("button").nth(
-        3
-    ).click()  # Unit (second AppBar action after back+lang)
+    page.get_by_role("button").nth(3).click()  # Unit (second AppBar action after back+lang)
     _wait_url(page, "/settings")
 
 
@@ -227,9 +217,7 @@ def test_settings_change_weight_unit(page, app_url, gui_credentials):
     page.get_by_role("button").nth(1).click()  # Profile
     _wait_url(page, "/profile")
     page.wait_for_timeout(2000)
-    page.get_by_role("button").nth(
-        3
-    ).click()  # Unit (second AppBar action after back+lang)
+    page.get_by_role("button").nth(3).click()  # Unit (second AppBar action after back+lang)
     _wait_url(page, "/settings")
     page.wait_for_timeout(1000)
 

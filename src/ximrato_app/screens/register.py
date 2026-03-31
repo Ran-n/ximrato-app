@@ -30,12 +30,8 @@ def register_view(page: ft.Page) -> ft.View:
         value=store.get("__reg_email") or "",
         on_change=lambda e: store.set("__reg_email", e.control.value),
     )
-    password = ft.TextField(
-        label=tr("register.password"), password=True, can_reveal_password=True
-    )
-    password2 = ft.TextField(
-        label=tr("register.confirm_password"), password=True, can_reveal_password=True
-    )
+    password = ft.TextField(label=tr("register.password"), password=True, can_reveal_password=True)
+    password2 = ft.TextField(label=tr("register.confirm_password"), password=True, can_reveal_password=True)
     error = ft.Text(color=ft.Colors.RED_400, visible=False)
 
     def on_register(e):
@@ -56,17 +52,13 @@ def register_view(page: ft.Page) -> ft.View:
             page.update()
             return
         try:
-            data = auth_api.register(
-                username.value.strip(), email.value.strip(), password.value
-            )
+            data = auth_api.register(username.value.strip(), email.value.strip(), password.value)
         except httpx.HTTPStatusError as exc:
             status = exc.response.status_code
             if status == 409:
                 detail = exc.response.json().get("detail", "")
                 error.value = (
-                    tr("register.err_username_taken")
-                    if "username" in detail
-                    else tr("register.err_email_taken")
+                    tr("register.err_username_taken") if "username" in detail else tr("register.err_email_taken")
                 )
             elif status == 422:
                 error.value = parse_422(exc.response)

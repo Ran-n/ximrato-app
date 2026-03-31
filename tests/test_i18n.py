@@ -119,9 +119,7 @@ def test_format_placeholder_consistent_across_langs():
         if "{code}" in en_val:
             for lang, catalog in [("gl", GL), ("es", ES)]:
                 val = catalog.get(key, "")
-                assert "{code}" in val, (
-                    f"{lang.upper()} key '{key}' missing {{code}} placeholder"
-                )
+                assert "{code}" in val, f"{lang.upper()} key '{key}' missing {{code}} placeholder"
 
 
 def test_distance_unit_placeholder_consistent():
