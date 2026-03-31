@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/28 16:15:35.158652 )
+[//]: # (+ Revised: 	2026/03/31 13:47:29.257343 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -31,19 +31,21 @@ cp .env.example .env
 
 Desktop:
 ```bash
-uv run python main.py
+uv run flet run main.py --port 8080 --host 0.0.0.0
 ```
 
 Web:
 ```bash
-uv run flet run --web --port 8080 main.py
+uv run flet run main.py --port 8080 --host 0.0.0.0 --web
 ```
 
 Build (Windows exe / Android APK):
 ```bash
-uv run flet build windows
-uv run flet build apk
+uv run flet build windows --clear-cache
+uv run flet build apk --clear-cache
 ```
+
+> `--clear-cache` is required on first build after dependency changes or icon updates. Subsequent incremental builds can omit it.
 
 ## Testing
 
