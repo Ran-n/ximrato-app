@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 12:30:44.899325
-Revised: 2026/03/28 15:43:56.536936
+Revised: 2026/03/31 19:59:24.750580
 """
 
 STRINGS: dict[str, str] = {
@@ -166,4 +166,53 @@ STRINGS: dict[str, str] = {
     "metrics.err_thighs": "Enter a valid thighs measurement.",
     "metrics.entry_one": "entry",
     "metrics.entry_many": "entries",
+    # Progress
+    "progress.title": "Progress",
+    "progress.tab_strength": "Strength",
+    "progress.tab_body": "Body",
+    "progress.select_exercise": "Select an exercise",
+    "progress.select_metric": "Select a metric",
+    "progress.no_data": "No data yet.",
+    "progress.weight_axis": "Weight",
+    "progress.date_axis": "Date",
+    "progress.max_weight": "Max weight",
+    "progress.total_volume": "Total volume",
+    # Exercise info
+    "exercise.primary_muscles": "Primary",
+    "exercise.secondary_muscles": "Secondary",
+    "exercise.equipment": "Equipment",
+    "exercise.description": "About",
+    "exercise.filter_all": "All",
+    "exercise.filter_barbell": "Barbell",
+    "exercise.filter_dumbbell": "Dumbbell",
+    "exercise.filter_machine": "Machine",
+    "exercise.filter_cable": "Cable",
+    "exercise.filter_bodyweight": "Bodyweight",
+    "exercise.filter_ab_wheel": "Ab wheel",
+    # Muscle names
+    "muscle.chest": "Chest",
+    "muscle.triceps": "Triceps",
+    "muscle.front_delts": "Front delts",
+    "muscle.side_delts": "Side delts",
+    "muscle.rear_delts": "Rear delts",
+    "muscle.lats": "Lats",
+    "muscle.traps": "Traps",
+    "muscle.rhomboids": "Rhomboids",
+    "muscle.biceps": "Biceps",
+    "muscle.forearms": "Forearms",
+    "muscle.quads": "Quads",
+    "muscle.hamstrings": "Hamstrings",
+    "muscle.glutes": "Glutes",
+    "muscle.calves": "Calves",
+    "muscle.core": "Core",
+    "muscle.lower_back": "Lower back",
+    "muscle.hip_flexors": "Hip flexors",
+    "muscle.obliques": "Obliques",
+    "muscle.shoulders": "Shoulders",
+    # Tooltips / info
+    "tooltip.bw_counted": "Your bodyweight counts as part of the total load (e.g. weighted pull-ups or dips).",
+    "tooltip.to_failure": "You performed the set until muscular failure — no more reps were possible.",
+    "tooltip.rpe": "Rate of Perceived Exertion: how close to failure you were. Helps track training intensity.",
+    # Home
+    "home.progress": "Progress",
 }

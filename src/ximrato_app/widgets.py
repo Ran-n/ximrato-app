@@ -2,13 +2,13 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 12:43:14.000000
-Revised: 2026/03/31 13:37:42.287462
+Revised: 2026/03/31 19:21:54.468467
 """
 
 import flet as ft
 
 _LANG_NAMES = [("en", "English"), ("gl", "Galego"), ("es", "Español")]
-_FLAG_FILE = {"gl": "gl_v2"}
+_FLAG_FILE: dict[str, str] = {}
 
 
 def lang_flag_btn(page: ft.Page) -> ft.Container:

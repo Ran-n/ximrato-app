@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 09:03:49.406117
-Revised: 2026/03/25 12:51:17.354541
+Revised: 2026/03/31 19:59:25.150943
 """
 
 import asyncio
@@ -83,6 +83,7 @@ def home_view(page: ft.Page) -> ft.View:
         (ft.Icons.FITNESS_CENTER, tr("home.session"), "/session"),
         (ft.Icons.DIRECTIONS_RUN, tr("home.cardio"), "/cardio"),
         (ft.Icons.MONITOR_WEIGHT, tr("home.metrics"), "/metrics"),
+        (ft.Icons.SHOW_CHART, tr("home.progress"), "/progress"),
     ]
 
     page.on_keyboard_event = None

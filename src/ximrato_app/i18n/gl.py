@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/25 12:30:44.996413
-Revised: 2026/03/28 15:43:56.789281
+Revised: 2026/04/01 07:42:23.699359
 """
 
 STRINGS: dict[str, str] = {
@@ -166,4 +166,53 @@ STRINGS: dict[str, str] = {
     "metrics.err_thighs": "Introduce unha medida de coxas v\u00e1lida.",
     "metrics.entry_one": "entrada",
     "metrics.entry_many": "entradas",
+    # Progress
+    "progress.title": "Progreso",
+    "progress.tab_strength": "Forza",
+    "progress.tab_body": "Corpo",
+    "progress.select_exercise": "Selecciona un exercicio",
+    "progress.select_metric": "Selecciona unha métrica",
+    "progress.no_data": "Aínda non hai datos.",
+    "progress.weight_axis": "Peso",
+    "progress.date_axis": "Data",
+    "progress.max_weight": "Peso máximo",
+    "progress.total_volume": "Volume total",
+    # Exercise info
+    "exercise.primary_muscles": "Primarios",
+    "exercise.secondary_muscles": "Secundarios",
+    "exercise.equipment": "Equipamento",
+    "exercise.description": "Sobre",
+    "exercise.filter_all": "Todos",
+    "exercise.filter_barbell": "Barra",
+    "exercise.filter_dumbbell": "Mancuerna",
+    "exercise.filter_machine": "Máquina",
+    "exercise.filter_cable": "Polea",
+    "exercise.filter_bodyweight": "Peso corporal",
+    "exercise.filter_ab_wheel": "Roda abdominal",
+    # Muscle names
+    "muscle.chest": "Peito",
+    "muscle.triceps": "Tríceps",
+    "muscle.front_delts": "Deltoide anterior",
+    "muscle.side_delts": "Deltoide lateral",
+    "muscle.rear_delts": "Deltoide posterior",
+    "muscle.lats": "Dorsais",
+    "muscle.traps": "Trapecios",
+    "muscle.rhomboids": "Romboides",
+    "muscle.biceps": "Bíceps",
+    "muscle.forearms": "Antebrazos",
+    "muscle.quads": "Cuádriceps",
+    "muscle.hamstrings": "Isquiotibiais",
+    "muscle.glutes": "Glúteos",
+    "muscle.calves": "Xemelgos",
+    "muscle.core": "Core",
+    "muscle.lower_back": "Lumbar",
+    "muscle.hip_flexors": "Flexores de cadeira",
+    "muscle.obliques": "Oblicuos",
+    "muscle.shoulders": "Ombreiros",
+    # Tooltips / info
+    "tooltip.bw_counted": "O teu peso conta como parte da carga total (p. ex. dominadas ou fondos con lastre).",
+    "tooltip.to_failure": "Realizaches a serie ata o fallo muscular: non puidestes facer máis repeticións.",
+    "tooltip.rpe": "Esforzo Percibido: canto de preto do fallo estiveches. Axuda a controlar a intensidade.",
+    # Home
+    "home.progress": "Progreso",
 }

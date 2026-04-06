@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/28 15:43:56.165260
+Revised: 2026/04/06 10:02:15.291219
 """
 
 import logging
@@ -13,6 +13,7 @@ import httpx
 
 from ximrato_app.api import sessions as sessions_api
 from ximrato_app.api import users as users_api
+from ximrato_app.api.sessions import localized_exercise_name
 from ximrato_app.auth_utils import handle_401
 from ximrato_app.i18n import Translator
 from ximrato_app.widgets import lang_flag_btn
@@ -47,7 +48,7 @@ def _set_label(
 
 def _fmt_duration(started_at: str, ended_at: str | None) -> str:
     start = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
-    end = datetime.fromisoformat(ended_at.replace("Z", "+00:00")) if ended_at else datetime.now(timezone.utc)
+    end = datetime.fromisoformat(ended_at.replace("Z", "+00:00")) if ended_at else datetime.now(timezone.utc)  # noqa: UP017
     minutes = int((end - start).total_seconds() // 60)
     if minutes < 60:
         return f"{minutes} min"
@@ -59,9 +60,17 @@ def _fmt_date(iso: str) -> str:
     return dt.strftime("%b %d, %Y  %H:%M")
 
 
+_EQUIP_FILTERS = ["all", "barbell", "dumbbell", "machine", "cable", "bodyweight", "ab_wheel"]
+
+
 def session_view(page: ft.Page) -> ft.View:
-    tr = Translator(page.session.store.get("lang") or "en")
+    lang = page.session.store.get("lang") or "en"
+    tr = Translator(lang)
     token: str = page.session.store.get("access_token")
+
+    # ── restore saved state ────────────────────────────────────────────────────
+    _saved_equip: str = page.session.store.get("session_equip_filter") or "all"
+    _saved_exercise: str | None = page.session.store.get("session_exercise_id")
 
     rpe_labels: dict[str, str] = {
         "no_reps_left": tr("session.rpe_no_reps_left"),
@@ -83,6 +92,8 @@ def session_view(page: ft.Page) -> ft.View:
 
     # ── state ──────────────────────────────────────────────────────────────────
     active_session: dict | None = None
+    _all_exercises: list[dict] = []
+    _equip_filter: list[str] = [_saved_equip]
 
     # ── shared controls ────────────────────────────────────────────────────────
     body = ft.Column(expand=True, scroll=ft.ScrollMode.AUTO, spacing=0)
@@ -98,13 +109,159 @@ def session_view(page: ft.Page) -> ft.View:
     exercise_dd = ft.Dropdown(label=tr("session.exercise"), expand=True)
     reps_field = ft.TextField(label=tr("session.reps"), keyboard_type=ft.KeyboardType.NUMBER, width=80)
     weight_field = ft.TextField(label=tr("session.weight"), keyboard_type=ft.KeyboardType.NUMBER, width=110)
-    bw_check = ft.Checkbox(label=tr("session.bw_counted"), value=False)
-    failure_check = ft.Checkbox(label=tr("session.to_failure"), value=False)
+    bw_check = ft.Checkbox(label=tr("session.bw_counted"), value=False, tooltip=tr("tooltip.bw_counted"))
+    failure_check = ft.Checkbox(label=tr("session.to_failure"), value=False, tooltip=tr("tooltip.to_failure"))
     rpe_dd = ft.Dropdown(
         label=tr("session.rpe"),
-        width=220,
+        width=200,
         options=[ft.dropdown.Option(k, v) for k, v in rpe_labels.items()],
     )
+    rpe_info_btn = ft.IconButton(ft.Icons.INFO_OUTLINE, tooltip=tr("tooltip.rpe"), icon_size=18)
+
+    # ── equipment filter chips ─────────────────────────────────────────────────
+    _filter_buttons: dict[str, ft.TextButton] = {}
+
+    def _filter_style(selected: bool) -> ft.ButtonStyle:
+        if selected:
+            return ft.ButtonStyle(
+                bgcolor=ft.Colors.PRIMARY,
+                color=ft.Colors.ON_PRIMARY,
+                shape=ft.RoundedRectangleBorder(radius=16),
+            )
+        return ft.ButtonStyle(
+            color=ft.Colors.ON_SURFACE_VARIANT,
+            shape=ft.RoundedRectangleBorder(radius=16),
+        )
+
+    def _apply_filter(equip: str) -> None:
+        _equip_filter[0] = equip
+        page.session.store.set("session_equip_filter", equip)
+        for key, btn in _filter_buttons.items():
+            btn.style = _filter_style(key == equip)
+        if equip == "all":
+            visible = _all_exercises
+        else:
+            visible = [ex for ex in _all_exercises if ex.get("equipment_type") == equip]
+        exercise_dd.options = [ft.dropdown.Option(str(ex["id"]), localized_exercise_name(ex, lang)) for ex in visible]
+        if exercise_dd.value and not any(str(ex["id"]) == exercise_dd.value for ex in visible):
+            exercise_dd.value = None
+            _exercise_info_panel.content = None
+            _exercise_info_panel.visible = False
+        page.update()
+
+    for _eq in _EQUIP_FILTERS:
+        _label = tr(f"exercise.filter_{_eq}")
+        _btn = ft.TextButton(
+            content=_label,
+            style=_filter_style(_eq == _saved_equip),
+            on_click=lambda _, eq=_eq: _apply_filter(eq),
+        )
+        _filter_buttons[_eq] = _btn
+
+    equip_filter_row = ft.Row(
+        list(_filter_buttons.values()),
+        scroll=ft.ScrollMode.AUTO,
+        spacing=4,
+    )
+
+    # ── exercise info panel ────────────────────────────────────────────────────
+    _exercise_info_panel = ft.Container(visible=False, padding=ft.Padding.symmetric(horizontal=16))
+
+    def _muscle_chip(muscle_key: str, primary: bool) -> ft.Container:
+        color = ft.Colors.TEAL_700 if primary else ft.Colors.GREY_700
+        label = tr(f"muscle.{muscle_key}")
+        return ft.Container(
+            content=ft.Text(label, size=11, color=ft.Colors.WHITE),
+            bgcolor=color,
+            border_radius=10,
+            padding=ft.padding.only(left=8, right=8, top=2, bottom=2),
+            margin=ft.Margin(0, 0, 4, 4),
+        )
+
+    def _render_exercise_info(ex: dict) -> None:
+        equip = ex.get("equipment_type") or ""
+        primary = ex.get("primary_muscles") or []
+        secondary = ex.get("secondary_muscles") or []
+        description = ex.get("description") or ""
+
+        rows: list[ft.Control] = []
+
+        # equipment
+        if equip:
+            equip_label = tr(f"exercise.filter_{equip}") if equip != "all" else equip
+            rows.append(
+                ft.Row(
+                    [
+                        ft.Text(tr("exercise.equipment") + ":", size=12, weight=ft.FontWeight.BOLD),
+                        ft.Container(
+                            content=ft.Text(equip_label, size=11, color=ft.Colors.WHITE),
+                            bgcolor=ft.Colors.BLUE_GREY_700,
+                            border_radius=10,
+                            padding=ft.padding.only(left=8, right=8, top=2, bottom=2),
+                        ),
+                    ],
+                    spacing=6,
+                    wrap=False,
+                )
+            )
+
+        # primary muscles
+        if primary:
+            rows.append(
+                ft.Row(
+                    [ft.Text(tr("exercise.primary_muscles") + ":", size=12, weight=ft.FontWeight.BOLD)],
+                    spacing=4,
+                )
+            )
+            rows.append(
+                ft.Row(
+                    [_muscle_chip(m, primary=True) for m in primary],
+                    wrap=True,
+                    spacing=0,
+                )
+            )
+
+        # secondary muscles
+        if secondary:
+            rows.append(
+                ft.Row(
+                    [ft.Text(tr("exercise.secondary_muscles") + ":", size=12, weight=ft.FontWeight.BOLD)],
+                    spacing=4,
+                )
+            )
+            rows.append(
+                ft.Row(
+                    [_muscle_chip(m, primary=False) for m in secondary],
+                    wrap=True,
+                    spacing=0,
+                )
+            )
+
+        # description
+        if description:
+            rows.append(ft.Text(tr("exercise.description") + ": " + description, size=12, italic=True))
+
+        _exercise_info_panel.content = ft.Container(
+            content=ft.Column(rows, spacing=6),
+            bgcolor=ft.Colors.SURFACE_CONTAINER_HIGH,
+            border_radius=8,
+            padding=ft.padding.only(left=12, right=12, top=8, bottom=8),
+        )
+        _exercise_info_panel.visible = bool(rows)
+        page.update()
+
+    def _on_exercise_change(e):
+        page.session.store.set("session_exercise_id", exercise_dd.value)
+        if not exercise_dd.value:
+            _exercise_info_panel.visible = False
+            page.update()
+            return
+        ex_id = int(exercise_dd.value)
+        matched = next((ex for ex in _all_exercises if ex["id"] == ex_id), None)
+        if matched:
+            _render_exercise_info(matched)
+
+    exercise_dd.on_select = _on_exercise_change
 
     # ── render helpers ─────────────────────────────────────────────────────────
     def _set_tile(s: dict) -> ft.ListTile:
@@ -161,9 +318,14 @@ def session_view(page: ft.Page) -> ft.View:
                     padding=ft.padding.only(left=16, top=8, bottom=4),
                 ),
                 ft.Container(
+                    equip_filter_row,
+                    padding=ft.Padding.symmetric(horizontal=16),
+                ),
+                ft.Container(
                     ft.Row([exercise_dd], expand=True),
                     padding=ft.Padding.symmetric(horizontal=16),
                 ),
+                _exercise_info_panel,
                 ft.Container(
                     ft.Row([reps_field, weight_field], spacing=12),
                     padding=ft.Padding.symmetric(horizontal=16),
@@ -173,7 +335,7 @@ def session_view(page: ft.Page) -> ft.View:
                     padding=ft.Padding.symmetric(horizontal=16),
                 ),
                 ft.Container(
-                    rpe_dd,
+                    ft.Row([rpe_dd, rpe_info_btn], spacing=4, vertical_alignment=ft.CrossAxisAlignment.CENTER),
                     padding=ft.Padding.symmetric(horizontal=16),
                 ),
                 ft.Container(
@@ -199,13 +361,26 @@ def session_view(page: ft.Page) -> ft.View:
 
     # ── async actions ──────────────────────────────────────────────────────────
     async def _load(*, _retried: bool = False) -> None:
-        nonlocal active_session, token
+        nonlocal active_session, token, _all_exercises
         try:
             config = users_api.get_config(token)
             weight_field.suffix = ft.Text(config.get("weight_unit", "kg"))
 
-            exercises = sessions_api.list_exercises(token)
-            exercise_dd.options = [ft.dropdown.Option(str(ex["id"]), ex["name"]) for ex in exercises]
+            _all_exercises = sessions_api.list_exercises(token)
+            # apply saved filter to populate exercise dropdown options
+            if _equip_filter[0] == "all":
+                _visible = _all_exercises
+            else:
+                _visible = [ex for ex in _all_exercises if ex.get("equipment_type") == _equip_filter[0]]
+            exercise_dd.options = [
+                ft.dropdown.Option(str(ex["id"]), localized_exercise_name(ex, lang)) for ex in _visible
+            ]
+            # restore saved exercise selection if still valid under current filter
+            if _saved_exercise and any(str(ex["id"]) == _saved_exercise for ex in _visible):
+                exercise_dd.value = _saved_exercise
+                _matched = next((ex for ex in _all_exercises if str(ex["id"]) == _saved_exercise), None)
+                if _matched:
+                    _render_exercise_info(_matched)
 
             active_session = sessions_api.get_active_session(token)
             if active_session is not None:

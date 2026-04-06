@@ -2,9 +2,10 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 10:04:44.000000
-Revised: 2026/03/28 14:34:04.495129
+Revised: 2026/04/01 07:42:23.612279
 """
 
+import contextlib
 import logging
 
 import flet as ft
@@ -144,10 +145,8 @@ def account_view(page: ft.Page) -> ft.View:
         page.update()
 
     def on_logout(e):
-        try:
+        with contextlib.suppress(Exception):
             auth_api.logout(token)
-        except Exception:
-            pass
         page.session.store.set("access_token", None)
         page.session.store.set("refresh_token", None)
         page.run_task(page.push_route, "/login")

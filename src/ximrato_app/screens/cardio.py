@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 12:15:00.000000
-Revised: 2026/03/28 15:43:56.282366
+Revised: 2026/04/06 10:02:15.374294
 """
 
 import asyncio
@@ -65,6 +65,9 @@ def cardio_view(page: ft.Page) -> ft.View:
     tr = Translator(page.session.store.get("lang") or "en")
     token: str = page.session.store.get("access_token")
 
+    # ── restore saved state ────────────────────────────────────────────────────
+    _saved_type: str | None = page.session.store.get("cardio_type_id")
+
     # ── state ──────────────────────────────────────────────────────────────────
     exercises_list: list[dict] = []
     dist_unit = "km"
@@ -77,7 +80,11 @@ def cardio_view(page: ft.Page) -> ft.View:
     error_text = ft.Text("", color=ft.Colors.ERROR, size=13)
 
     # ── idle controls ──────────────────────────────────────────────────────────
-    exercise_dd = ft.Dropdown(label=tr("cardio.type"), expand=True)
+    exercise_dd = ft.Dropdown(
+        label=tr("cardio.type"),
+        expand=True,
+    )
+    exercise_dd.on_select = lambda e: page.session.store.set("cardio_type_id", exercise_dd.value)
 
     # ── active controls ────────────────────────────────────────────────────────
     timer_text = ft.Text(
@@ -255,6 +262,8 @@ def cardio_view(page: ft.Page) -> ft.View:
             dist_unit = cfg.get("distance_unit", "km")
             exercises_list = cardio_api.list_cardio_exercises(token)
             exercise_dd.options = [ft.dropdown.Option(str(ex["id"]), ex["name"]) for ex in exercises_list]
+            if _saved_type and any(str(ex["id"]) == _saved_type for ex in exercises_list):
+                exercise_dd.value = _saved_type
             _render_idle()
         except httpx.HTTPStatusError as exc:
             if exc.response.status_code == 401 and not _retried:

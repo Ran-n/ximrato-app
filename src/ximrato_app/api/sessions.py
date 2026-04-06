@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 13:00:00.000000
-Revised: 2026/03/20 13:13:49.752283
+Revised: 2026/03/31 19:59:24.672509
 """
 
 import logging
@@ -58,6 +58,24 @@ def end_session(token: str, session_id: int, notes: str | None = None) -> dict:
         r.raise_for_status()
         log.info("end_session success")
         return r.json()
+
+
+def get_exercise_progress(token: str, exercise_id: int) -> list[dict]:
+    """Returns [{date, max_weight, max_reps, total_volume}, ...]"""
+    log.info("get_exercise_progress request: exercise_id=%d", exercise_id)
+    with get_client(token) as c:
+        r = c.get(f"/exercises/{exercise_id}/progress")
+        r.raise_for_status()
+        return r.json()
+
+
+def localized_exercise_name(ex: dict, lang: str) -> str:
+    """Return the exercise name in the current language, falling back to English."""
+    if lang != "en":
+        localized = ex.get(f"name_{lang}")
+        if localized:
+            return localized
+    return ex["name"]
 
 
 def add_set(

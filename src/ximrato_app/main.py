@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/24 08:51:53.915049
-Revised: 2026/03/31 09:55:44.683920
+Revised: 2026/04/05 18:59:23.200289
 """
 
 import asyncio
@@ -19,6 +19,7 @@ from ximrato_app.screens.home import home_view
 from ximrato_app.screens.login import login_view
 from ximrato_app.screens.metrics import metrics_view
 from ximrato_app.screens.profile import profile_view
+from ximrato_app.screens.progress import progress_view
 from ximrato_app.screens.register import register_view
 from ximrato_app.screens.session import session_view
 from ximrato_app.screens.session_history import session_history_view
@@ -83,6 +84,8 @@ async def main(page: ft.Page):
             page.views.append(cardio_history_view(page))
         elif route == "/metrics":
             page.views.append(metrics_view(page))
+        elif route == "/progress":
+            page.views.append(progress_view(page))
         else:
             page.views.append(login_view(page))
 
@@ -110,7 +113,11 @@ async def main(page: ft.Page):
         page.update()
         await asyncio.sleep(0)  # yield so send loop flushes patch to Flutter first
 
-        saved_lang = await prefs.get("lang")
+        try:
+            saved_lang = await prefs.get("lang")
+        except Exception:
+            log.warning("SharedPreferences.get('lang') timed out — falling back to default lang")
+            saved_lang = None
         if saved_lang:
             store.set("lang", saved_lang)
             store.set("__lang_explicit", True)
