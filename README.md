@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/03/31 13:47:29.257343 )
+[//]: # (+ Revised: 	2026/04/07 13:18:10.959250 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -76,7 +76,7 @@ uv run pytest tests/ -v
 - Keyboard controls — Enter submits forms on all screens, Escape navigates back where applicable, Tab moves between fields
 - Structured logging — route changes, API requests and responses
 - GUI smoke tests — 15 Playwright tests covering auth, profile, account, settings, session, cardio/metrics navigation, unauthenticated redirect, and avatar button visibility
-- Unit tests — 183 tests across auth API, users API, sessions API, cardio API, i18n (Translator + catalog completeness), error parsing, session screen helpers, cardio screen helpers, and metrics screen helpers
+- Unit tests — 225 tests across auth API, users API, sessions API (incl. exercise progress and localized names), cardio API, i18n (Translator + catalog completeness), error parsing, session screen helpers, cardio screen helpers, metrics screen helpers, and progress screen helpers
 - Home screen — launchpad with Session, Cardio, Body metrics buttons
 - Session logging — start session, log sets (exercise dropdown, reps, weight, bodyweight/to_failure flags, RPE), end session, view past sessions
 - Cardio quick log — select type, live timer, end → type-specific fields (Running/Cycling: distance, HR, elevation; Rowing: distance, HR, stroke rate); past logs listed below
@@ -86,6 +86,8 @@ uv run pytest tests/ -v
 - Body metrics — log individual measurements (weight, waist, chest, hips, neck, arms, thighs) as independent per-type records; any combination can be submitted in one form; past entries grouped by type with ↑/↓ delta from the previous entry; all entries listed inside a collapsible tile per type
 - Token refresh on 401 — all screens auto-retry once with the stored refresh token on a 401; redirects to login if the refresh token is also expired or missing; both async and sync handlers covered
 - History views — `/session-history` and `/cardio-history` dedicated screens; accessible via the history (🕐) button in each screen's AppBar; session history lists past sessions as collapsible tiles with set details; cardio history lists past logs with type, duration, and optional stats
+- Progress screen — `/progress` with Strength and Body tabs; line charts for max weight per session (strength) and body metric history; exercise and metric dropdowns with saved state across navigations; localized exercise names
+- Session screen — equipment filter chip bar to narrow the exercise dropdown; exercise info panel showing muscles, equipment, and description for the selected exercise
 
 ## v1 Scope
 

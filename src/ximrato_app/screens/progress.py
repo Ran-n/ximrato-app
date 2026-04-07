@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/31 19:59:24.991798
-Revised: 2026/04/06 10:02:15.456369
+Revised: 2026/04/07 13:15:38.216748
 """
 
 import logging
@@ -21,6 +21,15 @@ from ximrato_app.widgets import lang_flag_btn
 log = logging.getLogger("ximrato_app.screens.progress")
 
 _BODY_METRICS = ["weight", "waist", "chest", "hips", "neck", "arms", "thighs"]
+
+
+def _adapt_body_entries(entries: list[dict], metric_type: str) -> list[dict]:
+    """Filter body metric entries by type, sort by date, and adapt for charting."""
+    filtered = sorted(
+        [e for e in entries if e["metric_type"] == metric_type],
+        key=lambda x: x["logged_at"],
+    )
+    return [{"date": e["logged_at"][:10], "max_weight": e["value"]} for e in filtered]
 
 
 def progress_view(page: ft.Page) -> ft.View:
@@ -164,11 +173,7 @@ def progress_view(page: ft.Page) -> ft.View:
         active_panel.content = ft.ProgressRing()
         page.update()
         try:
-            filtered = sorted(
-                [e for e in _body_data if e["metric_type"] == metric_type],
-                key=lambda x: x["logged_at"],
-            )
-            adapted = [{"date": e["logged_at"][:10], "max_weight": e["value"]} for e in filtered]
+            adapted = _adapt_body_entries(_body_data, metric_type)
             active_panel.content = _build_chart(adapted, "max_weight")
             page.update()
         except Exception as exc:

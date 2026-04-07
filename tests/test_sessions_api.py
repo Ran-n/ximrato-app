@@ -2,7 +2,7 @@
 """
 Authors: Ran# <ran.hash@proton.me>
 Created: 2026/03/20 13:25:00.000000
-Revised: 2026/03/27 19:28:37.367270
+Revised: 2026/04/07 13:15:38.456939
 """
 
 from unittest.mock import MagicMock, patch
@@ -59,9 +59,8 @@ def test_list_exercises_returns_empty_list():
 def test_list_exercises_raises_on_http_error():
     ctx, resp = _make_mock_client(None, status_code=401)
     _http_error(resp, 401, "unauthorized")
-    with patch("ximrato_app.api.sessions.get_client", return_value=ctx):
-        with pytest.raises(httpx.HTTPStatusError):
-            sessions_api.list_exercises("tok")
+    with patch("ximrato_app.api.sessions.get_client", return_value=ctx), pytest.raises(httpx.HTTPStatusError):
+        sessions_api.list_exercises("tok")
 
 
 # ---------------------------------------------------------------------------
@@ -95,9 +94,8 @@ def test_get_active_session_returns_none_when_no_active():
 def test_get_active_session_raises_on_http_error():
     ctx, resp = _make_mock_client(None, status_code=500)
     _http_error(resp, 500, "server error")
-    with patch("ximrato_app.api.sessions.get_client", return_value=ctx):
-        with pytest.raises(httpx.HTTPStatusError):
-            sessions_api.get_active_session("tok")
+    with patch("ximrato_app.api.sessions.get_client", return_value=ctx), pytest.raises(httpx.HTTPStatusError):
+        sessions_api.get_active_session("tok")
 
 
 # ---------------------------------------------------------------------------
@@ -153,9 +151,8 @@ def test_start_session_posts_to_sessions():
 def test_start_session_raises_on_http_error():
     ctx, resp = _make_mock_client(None, status_code=409)
     _http_error(resp, 409, "conflict — session already active")
-    with patch("ximrato_app.api.sessions.get_client", return_value=ctx):
-        with pytest.raises(httpx.HTTPStatusError):
-            sessions_api.start_session("tok")
+    with patch("ximrato_app.api.sessions.get_client", return_value=ctx), pytest.raises(httpx.HTTPStatusError):
+        sessions_api.start_session("tok")
 
 
 # ---------------------------------------------------------------------------
@@ -197,9 +194,8 @@ def test_end_session_with_notes():
 def test_end_session_raises_on_http_error():
     ctx, resp = _make_mock_client(None, status_code=404)
     _http_error(resp, 404, "session not found")
-    with patch("ximrato_app.api.sessions.get_client", return_value=ctx):
-        with pytest.raises(httpx.HTTPStatusError):
-            sessions_api.end_session("tok", session_id=999)
+    with patch("ximrato_app.api.sessions.get_client", return_value=ctx), pytest.raises(httpx.HTTPStatusError):
+        sessions_api.end_session("tok", session_id=999)
 
 
 # ---------------------------------------------------------------------------
@@ -283,6 +279,78 @@ def test_add_set_with_bodyweight_counted():
 def test_add_set_raises_on_http_error():
     ctx, resp = _make_mock_client(None, status_code=422)
     _http_error(resp, 422, "validation error")
+    with patch("ximrato_app.api.sessions.get_client", return_value=ctx), pytest.raises(httpx.HTTPStatusError):
+        sessions_api.add_set("tok", session_id=1, exercise_id=1, reps=10, weight=0.0)
+
+
+# ---------------------------------------------------------------------------
+# get_exercise_progress
+# ---------------------------------------------------------------------------
+
+
+def test_get_exercise_progress_calls_correct_endpoint():
+    progress = [
+        {"date": "2026-04-01", "max_weight": 100.0, "max_reps": 5, "total_volume": 500.0},
+        {"date": "2026-04-06", "max_weight": 102.5, "max_reps": 5, "total_volume": 512.5},
+    ]
+    ctx, _ = _make_mock_client(progress)
     with patch("ximrato_app.api.sessions.get_client", return_value=ctx):
-        with pytest.raises(httpx.HTTPStatusError):
-            sessions_api.add_set("tok", session_id=1, exercise_id=1, reps=10, weight=0.0)
+        result = sessions_api.get_exercise_progress("tok", exercise_id=3)
+
+    ctx.get.assert_called_once_with("/exercises/3/progress")
+    assert result == progress
+
+
+def test_get_exercise_progress_returns_empty_list():
+    ctx, _ = _make_mock_client([])
+    with patch("ximrato_app.api.sessions.get_client", return_value=ctx):
+        result = sessions_api.get_exercise_progress("tok", exercise_id=1)
+
+    assert result == []
+
+
+def test_get_exercise_progress_raises_on_http_error():
+    ctx, resp = _make_mock_client(None, status_code=401)
+    _http_error(resp, 401, "unauthorized")
+    with patch("ximrato_app.api.sessions.get_client", return_value=ctx), pytest.raises(httpx.HTTPStatusError):
+        sessions_api.get_exercise_progress("tok", exercise_id=1)
+
+
+def test_get_exercise_progress_uses_exercise_id_in_path():
+    ctx, _ = _make_mock_client([])
+    with patch("ximrato_app.api.sessions.get_client", return_value=ctx):
+        sessions_api.get_exercise_progress("tok", exercise_id=42)
+
+    ctx.get.assert_called_once_with("/exercises/42/progress")
+
+
+# ---------------------------------------------------------------------------
+# localized_exercise_name
+# ---------------------------------------------------------------------------
+
+
+def test_localized_exercise_name_returns_english_for_en():
+    ex = {"name": "Squat", "name_es": "Sentadilla", "name_gl": "Agachamento"}
+    assert sessions_api.localized_exercise_name(ex, "en") == "Squat"
+
+
+def test_localized_exercise_name_returns_localized_when_available():
+    ex = {"name": "Squat", "name_es": "Sentadilla", "name_gl": "Agachamento"}
+    assert sessions_api.localized_exercise_name(ex, "es") == "Sentadilla"
+    assert sessions_api.localized_exercise_name(ex, "gl") == "Agachamento"
+
+
+def test_localized_exercise_name_falls_back_to_english_when_missing():
+    ex = {"name": "Bench Press"}
+    assert sessions_api.localized_exercise_name(ex, "es") == "Bench Press"
+
+
+def test_localized_exercise_name_falls_back_when_value_is_empty():
+    ex = {"name": "Deadlift", "name_es": ""}
+    assert sessions_api.localized_exercise_name(ex, "es") == "Deadlift"
+
+
+def test_localized_exercise_name_en_ignores_localized_keys():
+    # Even if name_en existed (hypothetically), en path always uses "name"
+    ex = {"name": "Pull-up", "name_es": "Dominadas"}
+    assert sessions_api.localized_exercise_name(ex, "en") == "Pull-up"
