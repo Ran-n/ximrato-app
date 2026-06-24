@@ -1,7 +1,7 @@
 [//]: # ( ---------------------------------------------------------------------- )
 [//]: # (+ Authors: 	Ran# <ran.hash@proton.me> )
 [//]: # (+ Created: 	2026/03/19 13:06:17.162346 )
-[//]: # (+ Revised: 	2026/04/07 13:18:10.959250 )
+[//]: # (+ Revised: 	2026/06/23 14:23:15.602709 )
 [//]: # ( ---------------------------------------------------------------------- )
 
 # ximrato-app
@@ -76,7 +76,7 @@ uv run pytest tests/ -v
 - Keyboard controls — Enter submits forms on all screens, Escape navigates back where applicable, Tab moves between fields
 - Structured logging — route changes, API requests and responses
 - GUI smoke tests — 15 Playwright tests covering auth, profile, account, settings, session, cardio/metrics navigation, unauthenticated redirect, and avatar button visibility
-- Unit tests — 225 tests across auth API, users API, sessions API (incl. exercise progress and localized names), cardio API, i18n (Translator + catalog completeness), error parsing, session screen helpers, cardio screen helpers, metrics screen helpers, and progress screen helpers
+- Unit tests — 192 tests across auth API, users API, sessions API (incl. exercise progress and localized names), cardio API, i18n (Translator + catalog completeness), error parsing, session screen helpers, cardio screen helpers, metrics screen helpers, and progress screen helpers
 - Home screen — launchpad with Session, Cardio, Body metrics buttons
 - Session logging — start session, log sets (exercise dropdown, reps, weight, bodyweight/to_failure flags, RPE), end session, view past sessions
 - Cardio quick log — select type, live timer, end → type-specific fields (Running/Cycling: distance, HR, elevation; Rowing: distance, HR, stroke rate); past logs listed below
@@ -145,3 +145,7 @@ Profile and home-screen avatars show the placeholder icon instead of the uploade
 - Sports logging
 - Additional exercise categories (swimming, jump rope, etc.)
 - Additional body measurements beyond the v1 set
+
+## License
+
+[PayBack License (PBL)](LICENSE)

@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BASE_URL = os.getenv("XIMRATO_API_URL", "http://127.0.0.1:8000")
+BASE_URL = os.getenv("XIMRATO_API_URL", "http://r4n.duckdns.org:8000")
 
 
 def get_client(token: str | None = None) -> httpx.Client:
